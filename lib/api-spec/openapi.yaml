@@ -3,20 +3,33 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Sentinel Authorized Pentest Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: scopes
+    description: Authorization scopes
+  - name: targets
+    description: Target hosts
+  - name: scans
+    description: Scan jobs
+  - name: findings
+    description: Vulnerability findings
+  - name: audit
+    description: Audit log
+  - name: reports
+    description: Reports
+  - name: dashboard
+    description: Dashboard summaries
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +37,512 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Scopes ──────────────────────────────────────────────────────────────
+  /scopes:
+    get:
+      operationId: listScopes
+      tags: [scopes]
+      summary: List authorization scopes
+      responses:
+        "200":
+          description: List of scopes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Scope"
+    post:
+      operationId: createScope
+      tags: [scopes]
+      summary: Create a new authorization scope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScopeInput"
+      responses:
+        "201":
+          description: Created scope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scope"
+
+  /scopes/{id}:
+    get:
+      operationId: getScope
+      tags: [scopes]
+      summary: Get a scope by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Scope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scope"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateScope
+      tags: [scopes]
+      summary: Update a scope
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScopeUpdate"
+      responses:
+        "200":
+          description: Updated scope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scope"
+    delete:
+      operationId: deleteScope
+      tags: [scopes]
+      summary: Delete a scope
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Targets ─────────────────────────────────────────────────────────────
+  /targets:
+    get:
+      operationId: listTargets
+      tags: [targets]
+      summary: List targets
+      parameters:
+        - name: scopeId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of targets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Target"
+    post:
+      operationId: createTarget
+      tags: [targets]
+      summary: Add a target to a scope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TargetInput"
+      responses:
+        "201":
+          description: Created target
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Target"
+
+  /targets/{id}:
+    get:
+      operationId: getTarget
+      tags: [targets]
+      summary: Get a target by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Target
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Target"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateTarget
+      tags: [targets]
+      summary: Update a target
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TargetUpdate"
+      responses:
+        "200":
+          description: Updated target
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Target"
+    delete:
+      operationId: deleteTarget
+      tags: [targets]
+      summary: Delete a target
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Scans ────────────────────────────────────────────────────────────────
+  /scans:
+    get:
+      operationId: listScans
+      tags: [scans]
+      summary: List scan jobs
+      parameters:
+        - name: targetId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: scopeId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of scans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Scan"
+    post:
+      operationId: createScan
+      tags: [scans]
+      summary: Start a new scan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanInput"
+      responses:
+        "201":
+          description: Created scan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+        "403":
+          description: Target not authorized
+
+  /scans/{id}:
+    get:
+      operationId: getScan
+      tags: [scans]
+      summary: Get a scan by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Scan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+        "404":
+          description: Not found
+
+  /scans/{id}/cancel:
+    post:
+      operationId: cancelScan
+      tags: [scans]
+      summary: Cancel a running scan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Scan cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scan"
+
+  /scans/{id}/findings:
+    get:
+      operationId: getScanFindings
+      tags: [scans]
+      summary: Get findings for a scan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Findings for scan
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Finding"
+
+  # ── Findings ────────────────────────────────────────────────────────────
+  /findings:
+    get:
+      operationId: listFindings
+      tags: [findings]
+      summary: List all findings
+      parameters:
+        - name: severity
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: targetId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: scopeId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: tool
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of findings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Finding"
+
+  /findings/{id}:
+    get:
+      operationId: getFinding
+      tags: [findings]
+      summary: Get a finding by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Finding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Finding"
+        "404":
+          description: Not found
+
+  /findings/by-severity:
+    get:
+      operationId: getFindingsBySeverity
+      tags: [findings]
+      summary: Count of findings grouped by severity
+      responses:
+        "200":
+          description: Severity breakdown
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeveritySummary"
+
+  # ── Audit Log ────────────────────────────────────────────────────────────
+  /audit:
+    get:
+      operationId: listAuditEntries
+      tags: [audit]
+      summary: List audit log entries (append-only)
+      parameters:
+        - name: targetId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: tool
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Audit entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEntry"
+
+  # ── Reports ──────────────────────────────────────────────────────────────
+  /reports:
+    get:
+      operationId: listReports
+      tags: [reports]
+      summary: List generated reports
+      responses:
+        "200":
+          description: Reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Report"
+    post:
+      operationId: generateReport
+      tags: [reports]
+      summary: Generate a report for a scan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportInput"
+      responses:
+        "201":
+          description: Generated report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+
+  /reports/{id}:
+    get:
+      operationId: getReport
+      tags: [reports]
+      summary: Get a report by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+        "404":
+          description: Not found
+
+  # ── Dashboard ────────────────────────────────────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: High-level platform summary
+      responses:
+        "200":
+          description: Summary counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Recent scans and findings activity feed
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /scans/active:
+    get:
+      operationId: getActiveScans
+      tags: [scans]
+      summary: List currently running scans
+      responses:
+        "200":
+          description: Active scans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Scan"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +550,332 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    # ── Scope ────────────────────────────────────────────────────────────
+    Scope:
+      type: object
+      required: [id, name, signedBy, roeActive, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        signedBy:
+          type: string
+        roeActive:
+          type: boolean
+        validFrom:
+          type: ["string", "null"]
+        validUntil:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        targetCount:
+          type: integer
+
+    ScopeInput:
+      type: object
+      required: [name, signedBy]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        signedBy:
+          type: string
+          minLength: 1
+        roeActive:
+          type: boolean
+        validFrom:
+          type: string
+        validUntil:
+          type: string
+
+    ScopeUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        signedBy:
+          type: string
+        roeActive:
+          type: boolean
+        validFrom:
+          type: string
+        validUntil:
+          type: string
+
+    # ── Target ───────────────────────────────────────────────────────────
+    Target:
+      type: object
+      required: [id, scopeId, host, allowed, activeModeEnabled, createdAt]
+      properties:
+        id:
+          type: integer
+        scopeId:
+          type: integer
+        scopeName:
+          type: string
+        host:
+          type: string
+        ip:
+          type: ["string", "null"]
+        portRange:
+          type: ["string", "null"]
+        allowed:
+          type: boolean
+        activeModeEnabled:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    TargetInput:
+      type: object
+      required: [scopeId, host]
+      properties:
+        scopeId:
+          type: integer
+        host:
+          type: string
+          minLength: 1
+        ip:
+          type: string
+        portRange:
+          type: string
+        allowed:
+          type: boolean
+        activeModeEnabled:
+          type: boolean
+        notes:
+          type: string
+
+    TargetUpdate:
+      type: object
+      properties:
+        host:
+          type: string
+        ip:
+          type: string
+        portRange:
+          type: string
+        allowed:
+          type: boolean
+        activeModeEnabled:
+          type: boolean
+        notes:
+          type: string
+
+    # ── Scan ─────────────────────────────────────────────────────────────
+    Scan:
+      type: object
+      required: [id, targetId, tool, phase, status, createdAt]
+      properties:
+        id:
+          type: integer
+        targetId:
+          type: integer
+        targetHost:
+          type: string
+        scopeName:
+          type: string
+        tool:
+          type: string
+        phase:
+          type: string
+          enum: [recon, scan, exploit, intel]
+        status:
+          type: string
+          enum: [queued, running, completed, failed, cancelled]
+        startedAt:
+          type: ["string", "null"]
+        completedAt:
+          type: ["string", "null"]
+        errorMessage:
+          type: ["string", "null"]
+        findingCount:
+          type: integer
+        createdAt:
+          type: string
+
+    ScanInput:
+      type: object
+      required: [targetId, tool, phase]
+      properties:
+        targetId:
+          type: integer
+        tool:
+          type: string
+          minLength: 1
+        phase:
+          type: string
+          enum: [recon, scan, exploit, intel]
+        options:
+          type: object
+          additionalProperties: true
+
+    # ── Finding ──────────────────────────────────────────────────────────
+    Finding:
+      type: object
+      required: [id, scanId, targetId, tool, severity, title, createdAt]
+      properties:
+        id:
+          type: integer
+        scanId:
+          type: integer
+        targetId:
+          type: integer
+        targetHost:
+          type: string
+        tool:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low, info]
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        evidence:
+          type: ["string", "null"]
+        cveRefs:
+          type: array
+          items:
+            type: string
+        remediation:
+          type: ["string", "null"]
+        raw:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    SeveritySummary:
+      type: object
+      required: [critical, high, medium, low, info]
+      properties:
+        critical:
+          type: integer
+        high:
+          type: integer
+        medium:
+          type: integer
+        low:
+          type: integer
+        info:
+          type: integer
+
+    # ── Audit ─────────────────────────────────────────────────────────────
+    AuditEntry:
+      type: object
+      required: [id, operator, tool, outcome, createdAt, targetHost]
+      properties:
+        id:
+          type: integer
+        operator:
+          type: string
+        targetId:
+          type: ["integer", "null"]
+        targetHost:
+          type: string
+        tool:
+          type: string
+        flags:
+          type: ["string", "null"]
+        authorizedBy:
+          type: ["string", "null"]
+        outcome:
+          type: string
+          enum: [allowed, denied]
+        createdAt:
+          type: string
+
+    # ── Report ────────────────────────────────────────────────────────────
+    Report:
+      type: object
+      required: [id, scanId, format, generatedAt]
+      properties:
+        id:
+          type: integer
+        scanId:
+          type: integer
+        targetHost:
+          type: string
+        format:
+          type: string
+          enum: [json, html]
+        summary:
+          type: ["string", "null"]
+        findingCount:
+          type: integer
+        generatedAt:
+          type: string
+
+    ReportInput:
+      type: object
+      required: [scanId, format]
+      properties:
+        scanId:
+          type: integer
+        format:
+          type: string
+          enum: [json, html]
+
+    # ── Dashboard ─────────────────────────────────────────────────────────
+    DashboardSummary:
+      type: object
+      required: [totalScopes, totalTargets, totalScans, activeScans, totalFindings, criticalFindings, highFindings]
+      properties:
+        totalScopes:
+          type: integer
+        totalTargets:
+          type: integer
+        totalScans:
+          type: integer
+        activeScans:
+          type: integer
+        totalFindings:
+          type: integer
+        criticalFindings:
+          type: integer
+        highFindings:
+          type: integer
+        recentFindingsByDay:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyCount"
+
+    DailyCount:
+      type: object
+      required: [date, count]
+      properties:
+        date:
+          type: string
+        count:
+          type: integer
+
+    ActivityItem:
+      type: object
+      required: [id, type, title, description, createdAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [scan_started, scan_completed, scan_failed, finding_critical, finding_high, scan_cancelled]
+        title:
+          type: string
+        description:
+          type: string
+        severity:
+          type: ["string", "null"]
+        targetHost:
+          type: ["string", "null"]
+        createdAt:
+          type: string

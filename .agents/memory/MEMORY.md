@@ -1,0 +1,2 @@
+- [Sentinel auth gate](sentinel-auth-gate.md) — POST /scans enforces 4-layer authorization: allow-list → roeActive → validity window → active-mode for exploit phase.
+- [Sentinel scopeId filter pattern](sentinel-scopeid-filter.md) — scans/findings have no scopeId column; filter via subquery on targets table with inArray.
