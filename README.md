@@ -161,11 +161,17 @@ pnpm --filter @workspace/api-spec run codegen   # regenerate hooks & validators 
 
 - [x] AI-assisted triage, deduplication and natural-language finding summaries
 - [x] SSRF / internal-target guard + unit tests + CI
-- [ ] Durable job workers (BullMQ) replacing in-process scan execution
-- [ ] Live scan progress streaming (SSE) to the dashboard
-- [ ] Continuous monitoring: scheduled re-scans + findings diff over time
-- [ ] Additional adapters (sqlmap, ffuf, nikto, TLS/header analysis) behind the gate
+- [x] Findings triage lifecycle + CVSS/CWE + AI business-risk ranking
+- [x] Live scan progress streaming (SSE) to the dashboard
+- [x] Domain-ownership verification (DNS TXT) for targets
+- [x] Continuous monitoring: scheduled re-scans + findings diff over time
+- [x] Shareable read-only report links
+- [x] Outbound alerting (Slack/webhook) on new critical findings
+- [x] Security-header analysis adapter
+- [ ] Durable job workers (BullMQ/Redis) replacing in-process scan execution
+- [ ] Additional adapters (sqlmap, ffuf, nikto, TLS/cert analysis) behind the gate
 - [ ] Authentication, multi-tenant workspaces and role-based access
+- [ ] PDF report export + OWASP/PCI compliance mappings
 - [ ] Live hosted demo
 
 ## Responsible use

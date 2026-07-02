@@ -15,12 +15,19 @@ An authorization-first automated penetration testing dashboard. Orchestrates sec
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- Frontend: React + Vite + Tailwind (dark cybersecurity theme, JetBrains Mono, electric cyan accent)
+- Frontend: React 19 + Vite + Tailwind v4 (premium "obsidian" theme — violet-charcoal
+  canvas, amethyst primary, gold accent, glassmorphism; Sora/Inter/JetBrains Mono)
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
+- AI: Claude (`@anthropic-ai/sdk`) — optional, env-gated report analysis
 - Build: esbuild (CJS bundle)
+
+Key services (`artifacts/api-server/src/services/`): `authorization` (the scan gate),
+`net-guard` (SSRF/internal-IP), `scan-runner` (shared launch/execute), `ai` (analysis),
+`scan-events` (SSE bus), `scheduler` (continuous monitoring), `domain-verify`, `alerts`.
+Tests run under Vitest (`pnpm -r run test`); CI in `.github/workflows/ci.yml`.
 
 ## Where things live
 
