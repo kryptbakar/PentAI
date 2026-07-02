@@ -1,8 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, scansTable, findingsTable, type Target, type Scope } from "@workspace/db";
 import { authorizeTarget } from "./authorization";
-import { adapterRegistry } from "../adapters/registry";
-import type { ToolAdapter } from "../adapters/types";
+import { adapterRegistry, type ToolAdapter } from "@workspace/engine";
 import { emitScanEvent } from "./scan-events";
 import { alertOnFindings } from "./alerts";
 

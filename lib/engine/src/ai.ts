@@ -1,5 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { logger } from "../lib/logger";
+
+// The engine has no logging framework of its own; keep it dependency-free.
+const logger = {
+  warn: (...args: unknown[]) => console.warn("[pentai:ai]", ...args),
+  error: (...args: unknown[]) => console.error("[pentai:ai]", ...args),
+};
 
 /**
  * AI analysis layer.

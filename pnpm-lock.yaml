@@ -187,6 +187,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
+      '@workspace/engine':
+        specifier: workspace:*
+        version: link:../../lib/engine
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -236,6 +239,19 @@ importers:
       vitest:
         specifier: ^4.1.9
         version: 4.1.9(@types/node@25.9.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
+
+  artifacts/cli:
+    dependencies:
+      '@workspace/engine':
+        specifier: workspace:*
+        version: link:../../lib/engine
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.4
+      esbuild:
+        specifier: 0.27.3
+        version: 0.27.3
 
   artifacts/mockup-sandbox:
     devDependencies:
@@ -654,6 +670,22 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+
+  lib/engine:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.109.0
+        version: 0.109.0(zod@3.25.76)
+      fast-xml-parser:
+        specifier: ^4.5.1
+        version: 4.5.6
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.4
+      vitest:
+        specifier: ^4.1.9
+        version: 4.1.9(@types/node@25.9.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)(yaml@2.9.0)
 
   scripts:
     devDependencies:

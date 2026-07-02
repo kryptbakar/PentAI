@@ -1,5 +1,5 @@
-import { assertSafeHost } from "../services/dispatcher";
-import { assertPublicHost } from "../services/net-guard";
+import { assertSafeHost } from "../dispatcher";
+import { assertPublicHost } from "../net-guard";
 import type { ToolAdapter, FindingDraft } from "./types";
 
 /**

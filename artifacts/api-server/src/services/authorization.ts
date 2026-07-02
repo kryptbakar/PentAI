@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db, targetsTable, scopesTable, auditEntriesTable, type Target, type Scope } from "@workspace/db";
-import { assertPublicHost, UnsafeTargetError } from "./net-guard";
+import { assertPublicHost, UnsafeTargetError } from "@workspace/engine";
 
 export type AuthorizationResult =
   | { ok: true; target: Target; scope: Scope }

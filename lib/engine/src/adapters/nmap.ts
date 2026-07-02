@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import { assertSafeHost, runDockerTool } from "../services/dispatcher";
+import { assertSafeHost, runDockerTool } from "../dispatcher";
 import type { ToolAdapter, FindingDraft } from "./types";
 
 const RISKY_PORTS = new Set([21, 23, 445, 3389, 3306, 5432, 6379, 27017]);

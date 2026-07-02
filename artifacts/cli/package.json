@@ -1,0 +1,27 @@
+{
+  "name": "pentai",
+  "version": "1.0.0",
+  "description": "Autonomous, authorization-first web pentesting from your terminal.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "pentai": "dist/pentai.mjs"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node ./build.mjs",
+    "start": "node ./dist/pentai.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": ["pentest", "security", "cli", "nuclei", "nmap", "recon", "vulnerability-scanner"],
+  "dependencies": {
+    "@workspace/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "esbuild": "0.27.3"
+  }
+}

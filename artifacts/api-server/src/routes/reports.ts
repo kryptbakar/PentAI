@@ -14,7 +14,7 @@ import {
   GetSharedReportResponse,
 } from "@workspace/api-zod";
 import { count } from "drizzle-orm";
-import { analyzeFindings, renderAnalysisSummary } from "../services/ai";
+import { analyzeFindings, renderAnalysisSummary } from "@workspace/engine";
 
 const router: IRouter = Router();
 

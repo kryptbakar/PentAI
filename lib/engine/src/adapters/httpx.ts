@@ -1,4 +1,4 @@
-import { assertSafeHost, runDockerTool } from "../services/dispatcher";
+import { assertSafeHost, runDockerTool } from "../dispatcher";
 import type { ToolAdapter, FindingDraft } from "./types";
 
 interface HttpxResult {

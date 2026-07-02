@@ -71,6 +71,48 @@ tool from a liability: **you can only scan what you are authorized to scan.**
 Exploitation tooling stays **disabled** unless active mode is explicitly enabled on a
 target — a deliberate safety boundary, not an oversight.
 
+## Terminal tool (`pentai` CLI)
+
+Prefer the command line? PentAI ships a standalone CLI that runs the same
+scanning engine — no database or server required, just Docker for the tool
+adapters.
+
+```bash
+# From this repo
+pnpm install
+pnpm --filter pentai build
+npm link ./artifacts/cli        # or: alias pentai="node $PWD/artifacts/cli/dist/pentai.mjs"
+
+# Scan a site you're authorized to test
+pentai scan example.com
+pentai scan https://app.example.com --json report.json --md report.md
+pentai scan example.com --tools subfinder,httpx,nuclei --yes
+pentai list-tools
+```
+
+```
+▶ subfinder running…
+✓ subfinder — 3 finding(s)
+▶ httpx running…
+  [medium] Missing security headers on https://example.com
+✓ httpx — 2 finding(s)
+...
+═══ Summary ═══
+  high      1
+  medium    4
+  info      9
+```
+
+- **Safe by default** — passive recon + non-intrusive checks; `--active` opts in
+  to active-mode tools. Loopback / private / cloud-metadata targets are refused.
+- **Authorization prompt** — confirms before scanning; `--yes` for CI/non-interactive.
+- **AI triage** — set `ANTHROPIC_API_KEY` to get an executive summary and
+  business-risk ranking after the scan.
+- **CI-friendly exit codes** — `0` clean, `2` when high/critical findings exist,
+  `1` on error.
+
+See [`artifacts/cli/README.md`](artifacts/cli/README.md) for full CLI docs.
+
 ## Architecture
 
 PentAI is a contract-first TypeScript monorepo (pnpm workspaces).
