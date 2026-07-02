@@ -1,15 +1,18 @@
-import { useGetReport } from "@workspace/api-client-react"
+import { useGetReport, useShareReport } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FileText, ArrowLeft, Download, Printer } from "lucide-react"
+import { FileText, ArrowLeft, Printer, Share2, Copy } from "lucide-react"
 import { Link, useParams } from "wouter"
 import { format } from "date-fns"
+import { useState } from "react"
 
 export default function ReportDetail() {
   const { id } = useParams()
   const reportId = parseInt(id || "0", 10)
-  
+
   const { data: report } = useGetReport(reportId, { query: { enabled: !!reportId, queryKey: ['report', reportId] } })
+  const share = useShareReport()
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
 
   if (!report) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading report…</div>
 
@@ -28,15 +31,35 @@ export default function ReportDetail() {
             <p className="text-muted-foreground text-sm mt-1">Generated {format(new Date(report.generatedAt), "yyyy-MM-dd HH:mm:ss")} UTC</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="font-mono">
-            <Printer className="w-4 h-4 mr-2" /> PRINT
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={share.isPending}
+            onClick={() =>
+              share.mutate(
+                { id: reportId },
+                { onSuccess: (r) => setShareUrl(`${window.location.origin}${r.url}`) },
+              )
+            }
+          >
+            <Share2 className="w-4 h-4 mr-2" /> Share
           </Button>
-          <Button size="sm" className="font-mono">
-            <Download className="w-4 h-4 mr-2" /> EXPORT
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
         </div>
       </div>
+
+      {shareUrl && (
+        <div className="flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/5 px-4 py-3">
+          <span className="text-xs text-muted-foreground">Public link:</span>
+          <code className="flex-1 truncate font-mono text-xs text-foreground">{shareUrl}</code>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigator.clipboard?.writeText(shareUrl)}>
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       <Card className="bg-card print:shadow-none print:border-none">
         <CardHeader className="text-center border-b border-border pb-8 pt-8">

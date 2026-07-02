@@ -5,6 +5,7 @@ import { authorizeTarget } from "../services/authorization";
 import { adapterRegistry } from "../adapters/registry";
 import type { ToolAdapter } from "../adapters/types";
 import { emitScanEvent, subscribeScan } from "../services/scan-events";
+import { alertOnFindings } from "../services/alerts";
 import {
   CreateScanBody,
   CreateScanResponse,
@@ -73,6 +74,13 @@ async function executeScan(
       .set({ status: "completed", completedAt: new Date() })
       .where(eq(scansTable.id, scanId));
     emitScanEvent({ type: "status", scanId, status: "completed", at: new Date().toISOString() });
+
+    // Fire outbound alerts for high-impact findings (no-op if unconfigured).
+    void alertOnFindings({
+      host: target.host,
+      scanId,
+      findings: findings.map((f) => ({ severity: f.severity, title: f.title })),
+    });
   } catch (error) {
     await db
       .update(scansTable)

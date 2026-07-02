@@ -40,6 +40,7 @@ import type {
   ScopeInput,
   ScopeUpdate,
   SeveritySummary,
+  ShareLink,
   Target,
   TargetInput,
   TargetUpdate,
@@ -2017,6 +2018,153 @@ export function useGetReport<TData = Awaited<ReturnType<typeof getReport>>, TErr
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetReportQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getShareReportUrl = (id: number,) => {
+
+
+
+
+  return `/api/reports/${id}/share`
+}
+
+/**
+ * @summary Create (or return) a public shareable link for a report
+ */
+export const shareReport = async (id: number, options?: RequestInit): Promise<ShareLink> => {
+
+  return customFetch<ShareLink>(getShareReportUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getShareReportMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof shareReport>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof shareReport>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['shareReport'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof shareReport>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  shareReport(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ShareReportMutationResult = NonNullable<Awaited<ReturnType<typeof shareReport>>>
+
+    export type ShareReportMutationError = ErrorType<void>
+
+    /**
+ * @summary Create (or return) a public shareable link for a report
+ */
+export const useShareReport = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof shareReport>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof shareReport>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getShareReportMutationOptions(options));
+    }
+
+export const getGetSharedReportUrl = (token: string,) => {
+
+
+
+
+  return `/api/shared/reports/${token}`
+}
+
+/**
+ * @summary View a report via its public share token (no auth)
+ */
+export const getSharedReport = async (token: string, options?: RequestInit): Promise<Report> => {
+
+  return customFetch<Report>(getGetSharedReportUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSharedReportQueryKey = (token: string,) => {
+    return [
+    `/api/shared/reports/${token}`
+    ] as const;
+    }
+
+
+export const getGetSharedReportQueryOptions = <TData = Awaited<ReturnType<typeof getSharedReport>>, TError = ErrorType<void>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSharedReport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSharedReportQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSharedReport>>> = ({ signal }) => getSharedReport(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: token !== null && token !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSharedReport>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSharedReportQueryResult = NonNullable<Awaited<ReturnType<typeof getSharedReport>>>
+export type GetSharedReportQueryError = ErrorType<void>
+
+
+/**
+ * @summary View a report via its public share token (no auth)
+ */
+
+export function useGetSharedReport<TData = Awaited<ReturnType<typeof getSharedReport>>, TError = ErrorType<void>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSharedReport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSharedReportQueryOptions(token,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -38,6 +38,7 @@ export * from './scope';
 export * from './scopeInput';
 export * from './scopeUpdate';
 export * from './severitySummary';
+export * from './shareLink';
 export * from './target';
 export * from './targetInput';
 export * from './targetUpdate';

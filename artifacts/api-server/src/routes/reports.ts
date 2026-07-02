@@ -1,12 +1,17 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, reportsTable, scansTable, targetsTable, findingsTable } from "@workspace/db";
+import { db, reportsTable, scansTable, targetsTable, findingsTable, reportSharesTable } from "@workspace/db";
+import { randomUUID } from "node:crypto";
 import {
   GenerateReportBody,
   GenerateReportResponse,
   GetReportParams,
   GetReportResponse,
   ListReportsResponse,
+  ShareReportParams,
+  ShareReportResponse,
+  GetSharedReportParams,
+  GetSharedReportResponse,
 } from "@workspace/api-zod";
 import { count } from "drizzle-orm";
 import { analyzeFindings, renderAnalysisSummary } from "../services/ai";
@@ -136,6 +141,60 @@ router.get("/reports/:id", async (req, res): Promise<void> => {
 
   const enriched = await enrichReport(report);
   res.json(GetReportResponse.parse(enriched));
+});
+
+// Create (or reuse) a public share token for a report.
+router.post("/reports/:id/share", async (req, res): Promise<void> => {
+  const params = ShareReportParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [report] = await db.select().from(reportsTable).where(eq(reportsTable.id, params.data.id));
+  if (!report) {
+    res.status(404).json({ error: "Report not found" });
+    return;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(reportSharesTable)
+    .where(eq(reportSharesTable.reportId, report.id));
+
+  let token = existing?.token;
+  if (!token) {
+    token = randomUUID().replace(/-/g, "");
+    await db.insert(reportSharesTable).values({ reportId: report.id, token });
+  }
+
+  res.json(ShareReportResponse.parse({ token, url: `/shared/reports/${token}` }));
+});
+
+// Public, unauthenticated report view by share token.
+router.get("/shared/reports/:token", async (req, res): Promise<void> => {
+  const params = GetSharedReportParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [share] = await db
+    .select()
+    .from(reportSharesTable)
+    .where(eq(reportSharesTable.token, params.data.token));
+  if (!share) {
+    res.status(404).json({ error: "Shared report not found" });
+    return;
+  }
+
+  const [report] = await db.select().from(reportsTable).where(eq(reportsTable.id, share.reportId));
+  if (!report) {
+    res.status(404).json({ error: "Report not found" });
+    return;
+  }
+
+  res.json(GetSharedReportResponse.parse(await enrichReport(report)));
 });
 
 export default router;

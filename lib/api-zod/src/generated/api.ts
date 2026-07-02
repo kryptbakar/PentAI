@@ -620,6 +620,37 @@ export const GetReportResponse = zod.object({
 
 
 /**
+ * @summary Create (or return) a public shareable link for a report
+ */
+export const ShareReportParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ShareReportResponse = zod.object({
+  "token": zod.string(),
+  "url": zod.string().describe('Relative URL of the public shared report view.')
+})
+
+
+/**
+ * @summary View a report via its public share token (no auth)
+ */
+export const GetSharedReportParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const GetSharedReportResponse = zod.object({
+  "id": zod.number(),
+  "scanId": zod.number(),
+  "targetHost": zod.string().optional(),
+  "format": zod.enum(['json', 'html']),
+  "summary": zod.string().nullish(),
+  "findingCount": zod.number().optional(),
+  "generatedAt": zod.string()
+})
+
+
+/**
  * @summary High-level platform summary
  */
 export const GetDashboardSummaryResponse = zod.object({

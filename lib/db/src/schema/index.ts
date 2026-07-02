@@ -4,3 +4,4 @@ export * from "./scans";
 export * from "./findings";
 export * from "./audit";
 export * from "./reports";
+export * from "./report-shares";

@@ -19,6 +19,7 @@ const FindingDetail = lazy(() => import('@/pages/findings-detail'));
 const AuditLog = lazy(() => import('@/pages/audit'));
 const Reports = lazy(() => import('@/pages/reports'));
 const ReportDetail = lazy(() => import('@/pages/reports-detail'));
+const SharedReport = lazy(() => import('@/pages/shared-report'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 
 const queryClient = new QueryClient();
@@ -59,7 +60,15 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
+          <Suspense fallback={<PageFallback />}>
+            <Switch>
+              {/* Public shared report — rendered outside the app shell. */}
+              <Route path="/shared/reports/:token" component={SharedReport} />
+              <Route>
+                <Router />
+              </Route>
+            </Switch>
+          </Suspense>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>

@@ -277,6 +277,12 @@ export interface Report {
   generatedAt: string;
 }
 
+export interface ShareLink {
+  token: string;
+  /** Relative URL of the public shared report view. */
+  url: string;
+}
+
 export type ReportInputFormat = typeof ReportInputFormat[keyof typeof ReportInputFormat];
 
 
