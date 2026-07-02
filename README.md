@@ -8,6 +8,7 @@ Enter a domain. PentAI provisions an authorized engagement scope and runs a full
 reconnaissance and vulnerability toolchain — subdomains, ports, services and CVEs —
 then streams the findings back into a premium security operations console.
 
+[![npm](https://img.shields.io/npm/v/%40kryptbakar%2Fpentai?logo=npm&label=pentai%20cli)](https://www.npmjs.com/package/@kryptbakar/pentai)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-24-539e43?logo=node.js&logoColor=white)](https://nodejs.org/)
