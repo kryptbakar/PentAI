@@ -139,6 +139,7 @@ export const headersAdapter: ToolAdapter = {
   name: "headers",
   phase: "scan",
   requiresActiveMode: false,
+  requiresDocker: false,
 
   async run(target): Promise<FindingDraft[]> {
     const host = assertSafeHost(target.host);

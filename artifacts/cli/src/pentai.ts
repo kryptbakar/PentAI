@@ -257,8 +257,10 @@ function listTools(): number {
   console.log(c.bold("Available tools:\n"));
   for (const t of availableTools()) {
     const mode = t.requiresActiveMode ? c.yellow("active-only") : c.green("passive");
-    console.log(`  ${c.cyan(t.name.padEnd(12))} ${c.dim(t.phase.padEnd(8))} ${mode}`);
+    const dep = t.requiresDocker ? c.dim("needs Docker") : c.green("no Docker");
+    console.log(`  ${c.cyan(t.name.padEnd(12))} ${c.dim(t.phase.padEnd(8))} ${mode.padEnd(20)} ${dep}`);
   }
+  console.log(c.dim("\n  dns, headers, tls run anywhere. The rest run in Docker containers."));
   console.log("");
   return 0;
 }

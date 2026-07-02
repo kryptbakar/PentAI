@@ -15,6 +15,7 @@ export const nmapAdapter: ToolAdapter = {
   name: "nmap",
   phase: "recon",
   requiresActiveMode: false,
+  requiresDocker: true,
 
   async run(target, options): Promise<FindingDraft[]> {
     const host = assertSafeHost(target.host);

@@ -1,5 +1,6 @@
 import { adapterRegistry } from "./adapters/registry";
 import { assertPublicHost } from "./net-guard";
+import { isDockerAvailable } from "./dispatcher";
 import type { FindingDraft, ScanTarget } from "./adapters/types";
 
 /**
@@ -8,8 +9,12 @@ import type { FindingDraft, ScanTarget } from "./adapters/types";
  * against a host, streaming progress through an optional callback.
  */
 
-/** Default non-intrusive toolchain: passive recon + safe vulnerability checks. */
-export const DEFAULT_TOOLCHAIN = ["subfinder", "httpx", "nmap", "headers", "nuclei"];
+/**
+ * Default non-intrusive toolchain: passive recon + safe vulnerability checks.
+ * Pure-Node tools (dns, headers, tls) run everywhere; the container-based tools
+ * run when Docker is available and are skipped gracefully otherwise.
+ */
+export const DEFAULT_TOOLCHAIN = ["dns", "headers", "tls", "subfinder", "httpx", "nmap", "nuclei"];
 
 export type AssessmentEvent =
   | { type: "start"; tool: string }
@@ -31,11 +36,17 @@ export interface AssessmentResult {
 }
 
 /** List the tools that are actually available in the registry. */
-export function availableTools(): { name: string; phase: string; requiresActiveMode: boolean }[] {
+export function availableTools(): {
+  name: string;
+  phase: string;
+  requiresActiveMode: boolean;
+  requiresDocker: boolean;
+}[] {
   return [...adapterRegistry.values()].map((a) => ({
     name: a.name,
     phase: a.phase,
     requiresActiveMode: a.requiresActiveMode,
+    requiresDocker: a.requiresDocker,
   }));
 }
 
@@ -55,6 +66,7 @@ export async function runAssessment(
     activeModeEnabled: activeMode,
   };
 
+  const dockerReady = await isDockerAvailable();
   const all: FindingDraft[] = [];
 
   for (const name of tools) {
@@ -65,6 +77,10 @@ export async function runAssessment(
     }
     if (adapter.requiresActiveMode && !activeMode) {
       options.onEvent?.({ type: "skip", tool: name, reason: "requires --active mode" });
+      continue;
+    }
+    if (adapter.requiresDocker && !dockerReady) {
+      options.onEvent?.({ type: "skip", tool: name, reason: "Docker not available" });
       continue;
     }
 

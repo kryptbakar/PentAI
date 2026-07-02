@@ -74,8 +74,10 @@ target — a deliberate safety boundary, not an oversight.
 ## Terminal tool (`pentai` CLI)
 
 Prefer the command line? PentAI ships a standalone CLI that runs the same
-scanning engine — no database or server required, just Docker for the tool
-adapters.
+scanning engine — no database or server required. The `dns`, `headers`, and
+`tls` checks run in-process and produce real findings with **no Docker**;
+Docker unlocks the container-based tools (`subfinder`, `httpx`, `nmap`,
+`nuclei`) and is skipped gracefully when absent.
 
 ```bash
 # From this repo

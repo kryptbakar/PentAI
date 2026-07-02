@@ -19,6 +19,7 @@ export const nucleiAdapter: ToolAdapter = {
   name: "nuclei",
   phase: "scan",
   requiresActiveMode: false,
+  requiresDocker: true,
 
   async run(target): Promise<FindingDraft[]> {
     const host = assertSafeHost(target.host);

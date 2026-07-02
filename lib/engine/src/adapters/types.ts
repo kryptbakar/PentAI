@@ -27,5 +27,7 @@ export interface ToolAdapter {
   name: string;
   phase: "recon" | "scan" | "exploit" | "intel";
   requiresActiveMode: boolean;
+  /** True when the adapter shells out to a Docker container. Pure-Node adapters set false. */
+  requiresDocker: boolean;
   run(target: ScanTarget, options: Record<string, unknown> | null): Promise<FindingDraft[]>;
 }

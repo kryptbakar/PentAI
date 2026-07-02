@@ -5,6 +5,7 @@ export const subfinderAdapter: ToolAdapter = {
   name: "subfinder",
   phase: "recon",
   requiresActiveMode: false,
+  requiresDocker: true,
 
   async run(target): Promise<FindingDraft[]> {
     const host = assertSafeHost(target.host);

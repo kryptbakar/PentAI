@@ -2,6 +2,23 @@ import { execFile } from "node:child_process";
 
 const HOSTNAME_OR_IP = /^[A-Za-z0-9.-]+$/;
 
+let dockerAvailable: boolean | null = null;
+
+/**
+ * Checks (once, cached) whether a working Docker daemon is reachable. Lets the
+ * orchestrator skip container-based tools gracefully instead of erroring when
+ * Docker isn't installed or running.
+ */
+export function isDockerAvailable(): Promise<boolean> {
+  if (dockerAvailable !== null) return Promise.resolve(dockerAvailable);
+  return new Promise((resolve) => {
+    execFile("docker", ["info"], { timeout: 5000 }, (error) => {
+      dockerAvailable = !error;
+      resolve(dockerAvailable);
+    });
+  });
+}
+
 /**
  * Rejects anything that isn't a bare hostname/IP character set. Run before
  * any user/DB-derived value is placed into a docker/tool argument list, so a
