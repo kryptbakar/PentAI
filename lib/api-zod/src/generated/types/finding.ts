@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FindingSeverity } from './findingSeverity';
+import type { FindingStatus } from './findingStatus';
 
 export interface Finding {
   id: number;
@@ -24,5 +25,12 @@ export interface Finding {
   remediation?: string | null;
   /** @nullable */
   raw?: string | null;
+  status?: FindingStatus;
+  /** @nullable */
+  cvssScore?: string | null;
+  /** @nullable */
+  cwe?: string | null;
+  /** @nullable */
+  businessRisk?: string | null;
   createdAt: string;
 }

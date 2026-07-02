@@ -355,6 +355,10 @@ export const GetScanFindingsResponseItem = zod.object({
   "cveRefs": zod.array(zod.string()).optional(),
   "remediation": zod.string().nullish(),
   "raw": zod.string().nullish(),
+  "status": zod.enum(['open', 'triaged', 'accepted_risk', 'fixed', 'regressed']).optional(),
+  "cvssScore": zod.string().nullish(),
+  "cwe": zod.string().nullish(),
+  "businessRisk": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const GetScanFindingsResponse = zod.array(GetScanFindingsResponseItem)
@@ -383,6 +387,10 @@ export const ListFindingsResponseItem = zod.object({
   "cveRefs": zod.array(zod.string()).optional(),
   "remediation": zod.string().nullish(),
   "raw": zod.string().nullish(),
+  "status": zod.enum(['open', 'triaged', 'accepted_risk', 'fixed', 'regressed']).optional(),
+  "cvssScore": zod.string().nullish(),
+  "cwe": zod.string().nullish(),
+  "businessRisk": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListFindingsResponse = zod.array(ListFindingsResponseItem)
@@ -408,6 +416,42 @@ export const GetFindingResponse = zod.object({
   "cveRefs": zod.array(zod.string()).optional(),
   "remediation": zod.string().nullish(),
   "raw": zod.string().nullish(),
+  "status": zod.enum(['open', 'triaged', 'accepted_risk', 'fixed', 'regressed']).optional(),
+  "cvssScore": zod.string().nullish(),
+  "cwe": zod.string().nullish(),
+  "businessRisk": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Update a finding's triage status
+ */
+export const UpdateFindingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateFindingBody = zod.object({
+  "status": zod.enum(['open', 'triaged', 'accepted_risk', 'fixed', 'regressed'])
+})
+
+export const UpdateFindingResponse = zod.object({
+  "id": zod.number(),
+  "scanId": zod.number(),
+  "targetId": zod.number(),
+  "targetHost": zod.string().optional(),
+  "tool": zod.string(),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low', 'info']),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "evidence": zod.string().nullish(),
+  "cveRefs": zod.array(zod.string()).optional(),
+  "remediation": zod.string().nullish(),
+  "raw": zod.string().nullish(),
+  "status": zod.enum(['open', 'triaged', 'accepted_risk', 'fixed', 'regressed']).optional(),
+  "cvssScore": zod.string().nullish(),
+  "cwe": zod.string().nullish(),
+  "businessRisk": zod.string().nullish(),
   "createdAt": zod.string()
 })
 

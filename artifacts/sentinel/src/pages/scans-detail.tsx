@@ -3,20 +3,53 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge, StatusIndicator } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Radar, ArrowLeft, StopCircle, Terminal, AlertTriangle, Bug, FileText, Shield } from "lucide-react"
+import { Radar, ArrowLeft, StopCircle, Terminal, AlertTriangle, Bug, FileText, Shield, Activity } from "lucide-react"
 import { Link, useParams } from "wouter"
 import { format } from "date-fns"
+import { useEffect, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { getGetScanQueryKey } from "@workspace/api-client-react"
+
+type LiveEvent =
+  | { type: "status"; status: string; at: string }
+  | { type: "finding"; severity: string; title: string; tool: string; at: string }
+  | { type: "log"; message: string; at: string }
 
 export default function ScanDetail() {
   const { id } = useParams()
   const scanId = parseInt(id || "0", 10)
-  
+
   const queryClient = useQueryClient()
   const { data: scan } = useGetScan(scanId, { query: { enabled: !!scanId, queryKey: getGetScanQueryKey(scanId) } })
   const { data: findings } = useGetScanFindings(scanId, { query: { enabled: !!scanId, queryKey: ['scan-findings', scanId] } })
   const cancelScan = useCancelScan()
+
+  const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([])
+  const status = scan?.status
+
+  // Subscribe to the live scan stream while the scan is in flight.
+  useEffect(() => {
+    if (!scanId || (status !== "running" && status !== "queued")) return
+    const es = new EventSource(`/api/scans/${scanId}/stream`)
+    es.onmessage = (e) => {
+      try {
+        const ev = JSON.parse(e.data) as LiveEvent
+        setLiveEvents((prev) => [ev, ...prev].slice(0, 60))
+        if (ev.type === "finding") {
+          queryClient.invalidateQueries({ queryKey: ["scan-findings", scanId] })
+        }
+        if (ev.type === "status" && (ev.status === "completed" || ev.status === "failed")) {
+          queryClient.invalidateQueries({ queryKey: getGetScanQueryKey(scanId) })
+          queryClient.invalidateQueries({ queryKey: ["scan-findings", scanId] })
+          es.close()
+        }
+      } catch {
+        /* ignore malformed frames */
+      }
+    }
+    es.onerror = () => es.close()
+    return () => es.close()
+  }, [scanId, status, queryClient])
 
   if (!scan) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading scan…</div>
 
@@ -59,6 +92,52 @@ export default function ScanDetail() {
           </Button>
         )}
       </div>
+
+      {(isRunning || liveEvents.length > 0) && (
+        <Card className="border-primary/30">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Activity className="h-4 w-4 text-primary" />
+              Live activity
+            </CardTitle>
+            {isRunning && (
+              <span className="flex items-center gap-2 text-xs text-primary">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                </span>
+                streaming
+              </span>
+            )}
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="max-h-56 overflow-y-auto divide-y divide-border/60">
+              {liveEvents.length === 0 ? (
+                <p className="p-4 text-xs text-muted-foreground">Waiting for the engine to report…</p>
+              ) : (
+                liveEvents.map((ev, i) => (
+                  <div key={i} className="flex items-center gap-3 px-4 py-2 text-xs">
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {format(new Date(ev.at), "HH:mm:ss")}
+                    </span>
+                    {ev.type === "finding" ? (
+                      <span className="flex items-center gap-2">
+                        <Badge variant={ev.severity as any} className="justify-center">{ev.severity}</Badge>
+                        <span className="text-foreground">{ev.title}</span>
+                        <span className="text-muted-foreground">· {ev.tool}</span>
+                      </span>
+                    ) : ev.type === "status" ? (
+                      <span className="text-foreground">Scan {ev.status}</span>
+                    ) : (
+                      <span className="text-muted-foreground">{ev.message}</span>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-1">

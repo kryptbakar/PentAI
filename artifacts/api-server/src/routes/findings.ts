@@ -7,6 +7,9 @@ import {
   GetFindingsBySeverityResponse,
   ListFindingsQueryParams,
   ListFindingsResponse,
+  UpdateFindingParams,
+  UpdateFindingBody,
+  UpdateFindingResponse,
 } from "@workspace/api-zod";
 import { count } from "drizzle-orm";
 
@@ -96,6 +99,37 @@ router.get("/findings/:id", async (req, res): Promise<void> => {
   }
 
   res.json(GetFindingResponse.parse(formatFinding(row.finding, row.host ?? "")));
+});
+
+router.patch("/findings/:id", async (req, res): Promise<void> => {
+  const params = UpdateFindingParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const body = UpdateFindingBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const [updated] = await db
+    .update(findingsTable)
+    .set({ status: body.data.status })
+    .where(eq(findingsTable.id, params.data.id))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: "Finding not found" });
+    return;
+  }
+
+  const [row] = await db
+    .select({ host: targetsTable.host })
+    .from(targetsTable)
+    .where(eq(targetsTable.id, updated.targetId));
+
+  res.json(UpdateFindingResponse.parse(formatFinding(updated, row?.host ?? "")));
 });
 
 export default router;

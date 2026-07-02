@@ -150,6 +150,17 @@ export const FindingSeverity = {
   info: 'info',
 } as const;
 
+export type FindingStatus = typeof FindingStatus[keyof typeof FindingStatus];
+
+
+export const FindingStatus = {
+  open: 'open',
+  triaged: 'triaged',
+  accepted_risk: 'accepted_risk',
+  fixed: 'fixed',
+  regressed: 'regressed',
+} as const;
+
 export interface Finding {
   id: number;
   scanId: number;
@@ -167,7 +178,29 @@ export interface Finding {
   remediation?: string | null;
   /** @nullable */
   raw?: string | null;
+  status?: FindingStatus;
+  /** @nullable */
+  cvssScore?: string | null;
+  /** @nullable */
+  cwe?: string | null;
+  /** @nullable */
+  businessRisk?: string | null;
   createdAt: string;
+}
+
+export type FindingUpdateStatus = typeof FindingUpdateStatus[keyof typeof FindingUpdateStatus];
+
+
+export const FindingUpdateStatus = {
+  open: 'open',
+  triaged: 'triaged',
+  accepted_risk: 'accepted_risk',
+  fixed: 'fixed',
+  regressed: 'regressed',
+} as const;
+
+export interface FindingUpdate {
+  status: FindingUpdateStatus;
 }
 
 export interface SeveritySummary {

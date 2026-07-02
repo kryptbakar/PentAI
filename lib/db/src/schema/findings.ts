@@ -16,6 +16,12 @@ export const findingsTable = pgTable("findings", {
   cveRefs: text("cve_refs").array(),
   remediation: text("remediation"),
   raw: text("raw"),
+  // Triage lifecycle: open | triaged | accepted_risk | fixed | regressed
+  status: text("status").notNull().default("open"),
+  cvssScore: text("cvss_score"),
+  cwe: text("cwe"),
+  // AI-assigned business risk (may differ from the raw scanner severity).
+  businessRisk: text("business_risk"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

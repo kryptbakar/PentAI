@@ -1,16 +1,28 @@
-import { useGetFinding } from "@workspace/api-client-react"
+import { useGetFinding, useUpdateFinding, getGetFindingQueryKey } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ShieldAlert, ArrowLeft, Terminal, FileCode2, Zap, Server, Code } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ShieldAlert, ArrowLeft, Terminal, FileCode2, Zap, Server, Code, Sparkles, Gauge } from "lucide-react"
 import { Link, useParams } from "wouter"
 import { format } from "date-fns"
+import { useQueryClient } from "@tanstack/react-query"
+
+const STATUS_OPTIONS = [
+  { value: "open", label: "Open" },
+  { value: "triaged", label: "Triaged" },
+  { value: "accepted_risk", label: "Accepted risk" },
+  { value: "fixed", label: "Fixed" },
+  { value: "regressed", label: "Regressed" },
+]
 
 export default function FindingDetail() {
   const { id } = useParams()
   const findingId = parseInt(id || "0", 10)
-  
+  const queryClient = useQueryClient()
+
   const { data: finding } = useGetFinding(findingId, { query: { enabled: !!findingId, queryKey: ['finding', findingId] } })
+  const updateFinding = useUpdateFinding()
 
   if (!finding) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading finding…</div>
 
@@ -25,6 +37,11 @@ export default function FindingDetail() {
             <Badge variant={finding.severity as any} className="w-fit text-sm px-3 py-1">
               {finding.severity}
             </Badge>
+            {finding.businessRisk && (
+              <Badge variant={finding.businessRisk as any} className="w-fit gap-1 text-sm px-3 py-1">
+                <Sparkles className="w-3 h-3" /> AI risk: {finding.businessRisk}
+              </Badge>
+            )}
             <h1 className="text-xl md:text-2xl font-bold font-display text-foreground truncate" title={finding.title}>
               {finding.title}
             </h1>
@@ -93,9 +110,52 @@ export default function FindingDetail() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
+              <CardTitle className="text-sm">Triage</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="text-[10px] uppercase font-mono text-muted-foreground">Status</div>
+              <Select
+                value={finding.status ?? "open"}
+                onValueChange={(status) =>
+                  updateFinding.mutate(
+                    { id: findingId, data: { status: status as any } },
+                    { onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetFindingQueryKey(findingId) }) },
+                  )
+                }
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle className="text-sm">METADATA</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {(finding.cvssScore || finding.cwe) && (
+                <div className="flex flex-wrap gap-4">
+                  {finding.cvssScore && (
+                    <div>
+                      <div className="text-[10px] uppercase font-mono text-muted-foreground mb-1">CVSS</div>
+                      <span className="flex items-center gap-1 text-sm font-mono text-foreground">
+                        <Gauge className="w-3 h-3" /> {finding.cvssScore}
+                      </span>
+                    </div>
+                  )}
+                  {finding.cwe && (
+                    <div>
+                      <div className="text-[10px] uppercase font-mono text-muted-foreground mb-1">CWE</div>
+                      <span className="text-sm font-mono text-foreground">{finding.cwe}</span>
+                    </div>
+                  )}
+                </div>
+              )}
               <div>
                 <div className="text-[10px] uppercase font-mono text-muted-foreground mb-2">CVE References</div>
                 {finding.cveRefs && finding.cveRefs.length > 0 ? (

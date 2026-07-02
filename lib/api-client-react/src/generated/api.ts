@@ -24,6 +24,7 @@ import type {
   AuditEntry,
   DashboardSummary,
   Finding,
+  FindingUpdate,
   GetRecentActivityParams,
   HealthStatus,
   ListAuditEntriesParams,
@@ -1422,6 +1423,77 @@ export function useGetFinding<TData = Awaited<ReturnType<typeof getFinding>>, TE
 
 
 
+
+export const getUpdateFindingUrl = (id: number,) => {
+
+
+
+
+  return `/api/findings/${id}`
+}
+
+/**
+ * @summary Update a finding's triage status
+ */
+export const updateFinding = async (id: number,
+    findingUpdate: FindingUpdate, options?: RequestInit): Promise<Finding> => {
+
+  return customFetch<Finding>(getUpdateFindingUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(findingUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateFindingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFinding>>, TError,{id: number;data: BodyType<FindingUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFinding>>, TError,{id: number;data: BodyType<FindingUpdate>}, TContext> => {
+
+const mutationKey = ['updateFinding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFinding>>, {id: number;data: BodyType<FindingUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateFinding(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFindingMutationResult = NonNullable<Awaited<ReturnType<typeof updateFinding>>>
+    export type UpdateFindingMutationBody = BodyType<FindingUpdate>
+    export type UpdateFindingMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a finding's triage status
+ */
+export const useUpdateFinding = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFinding>>, TError,{id: number;data: BodyType<FindingUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateFinding>>,
+        TError,
+        {id: number;data: BodyType<FindingUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateFindingMutationOptions(options));
+    }
 
 export const getGetFindingsBySeverityUrl = () => {
 

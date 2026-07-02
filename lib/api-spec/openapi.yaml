@@ -393,6 +393,31 @@ paths:
                 $ref: "#/components/schemas/Finding"
         "404":
           description: Not found
+    patch:
+      operationId: updateFinding
+      tags: [findings]
+      summary: Update a finding's triage status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FindingUpdate"
+      responses:
+        "200":
+          description: Updated finding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Finding"
+        "404":
+          description: Not found
 
   /findings/by-severity:
     get:
@@ -753,8 +778,25 @@ components:
           type: ["string", "null"]
         raw:
           type: ["string", "null"]
+        status:
+          type: string
+          enum: [open, triaged, accepted_risk, fixed, regressed]
+        cvssScore:
+          type: ["string", "null"]
+        cwe:
+          type: ["string", "null"]
+        businessRisk:
+          type: ["string", "null"]
         createdAt:
           type: string
+
+    FindingUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [open, triaged, accepted_risk, fixed, regressed]
 
     SeveritySummary:
       type: object

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, reportsTable, scansTable, targetsTable, findingsTable } from "@workspace/db";
 import {
   GenerateReportBody,
@@ -83,6 +83,20 @@ router.post("/reports", async (req, res): Promise<void> => {
       cveRefs: f.cveRefs,
     })),
   });
+
+  // Persist the AI-assigned business risk back onto matching findings so it
+  // surfaces everywhere findings are shown, not just in the report body.
+  if (analysis) {
+    for (const t of analysis.triaged) {
+      const titles = [t.title, ...(t.mergedFrom ?? [])];
+      for (const title of titles) {
+        await db
+          .update(findingsTable)
+          .set({ businessRisk: t.businessRisk })
+          .where(and(eq(findingsTable.scanId, scan.id), eq(findingsTable.title, title)));
+      }
+    }
+  }
 
   const deterministicSummary = summaryLines.join("\n");
   const summary = analysis

@@ -4,6 +4,7 @@ import { db, scansTable, targetsTable, scopesTable, findingsTable, type Target }
 import { authorizeTarget } from "../services/authorization";
 import { adapterRegistry } from "../adapters/registry";
 import type { ToolAdapter } from "../adapters/types";
+import { emitScanEvent, subscribeScan } from "../services/scan-events";
 import {
   CreateScanBody,
   CreateScanResponse,
@@ -52,16 +53,26 @@ async function executeScan(
   options: Record<string, unknown> | null
 ): Promise<void> {
   try {
+    emitScanEvent({ type: "log", scanId, message: `Running ${adapter.name}…`, at: new Date().toISOString() });
     const findings = await adapter.run(target, options);
 
     for (const finding of findings) {
       await db.insert(findingsTable).values({ ...finding, scanId, targetId: target.id });
+      emitScanEvent({
+        type: "finding",
+        scanId,
+        severity: finding.severity,
+        title: finding.title,
+        tool: finding.tool,
+        at: new Date().toISOString(),
+      });
     }
 
     await db
       .update(scansTable)
       .set({ status: "completed", completedAt: new Date() })
       .where(eq(scansTable.id, scanId));
+    emitScanEvent({ type: "status", scanId, status: "completed", at: new Date().toISOString() });
   } catch (error) {
     await db
       .update(scansTable)
@@ -71,6 +82,7 @@ async function executeScan(
         errorMessage: error instanceof Error ? error.message : String(error),
       })
       .where(eq(scansTable.id, scanId));
+    emitScanEvent({ type: "status", scanId, status: "failed", at: new Date().toISOString() });
   }
 }
 
@@ -246,6 +258,36 @@ router.get("/scans/:id/findings", async (req, res): Promise<void> => {
   }));
 
   res.json(GetScanFindingsResponse.parse(result));
+});
+
+// Live scan progress via Server-Sent Events. Not part of the OpenAPI contract
+// (SSE doesn't fit request/response codegen) — the frontend subscribes with a
+// native EventSource. Emits `finding`, `status`, and `log` events.
+router.get("/scans/:id/stream", (req, res): void => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).end();
+    return;
+  }
+
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    // Disable proxy buffering so events flush immediately.
+    "X-Accel-Buffering": "no",
+  });
+  res.write(": connected\n\n");
+
+  const unsubscribe = subscribeScan(id, (event) => {
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+  });
+  const ping = setInterval(() => res.write(": ping\n\n"), 15_000);
+
+  req.on("close", () => {
+    clearInterval(ping);
+    unsubscribe();
+  });
 });
 
 export default router;
