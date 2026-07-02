@@ -87,6 +87,34 @@ Useful in CI: fail the pipeline when new high/critical issues appear.
 - run: pentai scan "$TARGET" --yes    # non-zero exit fails the job
 ```
 
+## Publishing (maintainers)
+
+The package is self-contained — the engine and Anthropic SDK are bundled into
+`dist/pentai.mjs`, so it has **zero runtime dependencies**. Publish it with
+`pnpm` (which resolves the workspace/catalog protocols):
+
+**Option A — automated (recommended).** Add an npm *Automation* token as the
+`NPM_TOKEN` repo secret, then push a version tag:
+
+```bash
+# bump artifacts/cli/package.json "version" first, commit, then:
+git tag pentai-v1.0.0
+git push origin pentai-v1.0.0     # triggers .github/workflows/publish-cli.yml
+```
+
+**Option B — manual, from your machine:**
+
+```bash
+npm login
+pnpm --filter pentai publish --no-git-checks --access public
+```
+
+Verify the contents first with a dry run (no auth needed):
+
+```bash
+pnpm --filter pentai publish --dry-run --no-git-checks
+```
+
 ## Safety
 
 Only scan systems you **own** or are **explicitly authorized** to test. `pentai`

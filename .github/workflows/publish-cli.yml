@@ -1,0 +1,45 @@
+name: Publish pentai CLI
+
+# Publishes the `pentai` package to npm.
+#
+# Setup (once): create an npm "Automation" access token
+# (npmjs.com → Access Tokens) and add it to this repo as a secret named
+# NPM_TOKEN (Settings → Secrets and variables → Actions).
+#
+# Release: bump artifacts/cli/package.json "version", commit, then either
+#   • push a tag `pentai-v<version>` (e.g. pentai-v1.0.0), or
+#   • run this workflow manually (Actions → Publish pentai CLI → Run workflow).
+on:
+  push:
+    tags:
+      - "pentai-v*"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the CLI
+        run: pnpm --filter pentai run build
+
+      - name: Publish to npm
+        run: pnpm --filter pentai publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

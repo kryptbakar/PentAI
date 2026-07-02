@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "Autonomous, authorization-first web pentesting from your terminal.",
   "license": "MIT",
+  "author": "Muhammad Abubakar (kryptbakar)",
   "type": "module",
   "bin": {
     "pentai": "dist/pentai.mjs"
   },
-  "files": ["dist"],
+  "files": ["dist", "README.md"],
   "engines": {
     "node": ">=20"
   },
@@ -17,8 +18,30 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "node ./build.mjs"
   },
-  "keywords": ["pentest", "security", "cli", "nuclei", "nmap", "recon", "vulnerability-scanner"],
-  "comment": "The engine and the Anthropic SDK are bundled into dist/pentai.mjs at build time, so the published package has zero runtime dependencies and installs standalone.",
+  "keywords": [
+    "pentest",
+    "penetration-testing",
+    "security",
+    "cli",
+    "nuclei",
+    "nmap",
+    "recon",
+    "vulnerability-scanner",
+    "appsec",
+    "infosec"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kryptbakar/PentAI.git",
+    "directory": "artifacts/cli"
+  },
+  "homepage": "https://github.com/kryptbakar/PentAI/tree/main/artifacts/cli#readme",
+  "bugs": {
+    "url": "https://github.com/kryptbakar/PentAI/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@workspace/engine": "workspace:*",
     "@types/node": "catalog:",
