@@ -11,7 +11,7 @@ export default function ReportDetail() {
   
   const { data: report } = useGetReport(reportId, { query: { enabled: !!reportId, queryKey: ['report', reportId] } })
 
-  if (!report) return <div className="p-8 text-primary font-mono text-sm animate-pulse">DECRYPTING_REPORT()...</div>
+  if (!report) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading report…</div>
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -21,11 +21,11 @@ export default function ReportDetail() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+            <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
               <FileText className="w-6 h-6" />
               REPORT ARTIFACT: RPT-{report.id.toString().padStart(4, '0')}
             </h1>
-            <p className="text-muted-foreground text-sm font-mono mt-1">Generated {format(new Date(report.generatedAt), "yyyy-MM-dd HH:mm:ss")} UTC</p>
+            <p className="text-muted-foreground text-sm mt-1">Generated {format(new Date(report.generatedAt), "yyyy-MM-dd HH:mm:ss")} UTC</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -53,7 +53,7 @@ export default function ReportDetail() {
         <CardContent className="p-8 md:p-12 space-y-8">
           
           <section>
-            <h3 className="text-lg font-bold font-mono text-primary border-b border-border/50 pb-2 mb-4 uppercase tracking-wider">
+            <h3 className="text-lg font-bold font-display text-foreground border-b border-border/50 pb-2 mb-4 uppercase tracking-wider">
               1. Executive Summary
             </h3>
             <div className="prose prose-invert max-w-none text-foreground leading-relaxed">
@@ -62,7 +62,7 @@ export default function ReportDetail() {
           </section>
 
           <section>
-            <h3 className="text-lg font-bold font-mono text-primary border-b border-border/50 pb-2 mb-4 uppercase tracking-wider">
+            <h3 className="text-lg font-bold font-display text-foreground border-b border-border/50 pb-2 mb-4 uppercase tracking-wider">
               2. Assessment Parameters
             </h3>
             <div className="grid grid-cols-2 gap-4 font-mono text-sm">
@@ -86,7 +86,7 @@ export default function ReportDetail() {
           </section>
 
           <section>
-            <h3 className="text-lg font-bold font-mono text-primary border-b border-border/50 pb-2 mb-4 uppercase tracking-wider">
+            <h3 className="text-lg font-bold font-display text-foreground border-b border-border/50 pb-2 mb-4 uppercase tracking-wider">
               3. Raw Output Artifact
             </h3>
             <div className="bg-black border border-border p-4 rounded-none overflow-x-auto">

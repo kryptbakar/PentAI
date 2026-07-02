@@ -53,12 +53,12 @@ function GenerateReportDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2 font-mono">
           <Plus className="w-4 h-4" />
-          GENERATE_REPORT
+          Generate report
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>COMPILE_SCAN_REPORT</DialogTitle>
+          <DialogTitle>Compile report</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -125,17 +125,17 @@ function GenerateReportDialog() {
 export default function Reports() {
   const { data: reports } = useListReports()
 
-  if (!reports) return <div className="p-8 text-primary font-mono text-sm animate-pulse">FETCHING_REPORTS()...</div>
+  if (!reports) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading reports…</div>
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
-          <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+          <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
             <FileText className="w-6 h-6" />
-            ENGAGEMENT_REPORTS
+            Engagement reports
           </h1>
-          <p className="text-muted-foreground text-sm font-mono mt-1">Generated artifacts and summaries</p>
+          <p className="text-muted-foreground text-sm mt-1">Generated artifacts and summaries</p>
         </div>
         <GenerateReportDialog />
       </div>
@@ -144,7 +144,7 @@ export default function Reports() {
         {reports.length === 0 ? (
           <div className="col-span-full p-12 text-center border border-dashed border-border">
             <FileText className="w-12 h-12 text-muted mx-auto mb-4" />
-            <p className="text-muted-foreground font-mono text-sm mb-4">NO_REPORTS_GENERATED</p>
+            <p className="text-muted-foreground font-mono text-sm mb-4">No reports yet</p>
             <GenerateReportDialog />
           </div>
         ) : (

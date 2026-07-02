@@ -18,7 +18,7 @@ export default function ScanDetail() {
   const { data: findings } = useGetScanFindings(scanId, { query: { enabled: !!scanId, queryKey: ['scan-findings', scanId] } })
   const cancelScan = useCancelScan()
 
-  if (!scan) return <div className="p-8 text-primary font-mono text-sm animate-pulse">FETCHING_SCAN_TELEMETRY()...</div>
+  if (!scan) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading scan…</div>
 
   const isRunning = scan.status === 'running' || scan.status === 'queued'
 
@@ -41,21 +41,21 @@ export default function ScanDetail() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+              <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
                 <Terminal className="w-6 h-6" />
                 JOB-{scan.id.toString().padStart(4, '0')}
               </h1>
               <StatusIndicator status={scan.status} />
               <Badge variant={scan.phase}>{scan.phase}</Badge>
             </div>
-            <p className="text-muted-foreground text-sm font-mono mt-1">Target: {scan.targetHost} | Scope: {scan.scopeName}</p>
+            <p className="text-muted-foreground text-sm mt-1">Target: {scan.targetHost} | Scope: {scan.scopeName}</p>
           </div>
         </div>
         
         {isRunning && (
           <Button variant="destructive" onClick={handleCancel} disabled={cancelScan.isPending} className="font-mono rounded-none">
             <StopCircle className="w-4 h-4 mr-2" />
-            ABORT_SCAN
+            Abort
           </Button>
         )}
       </div>
@@ -63,7 +63,7 @@ export default function ScanDetail() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle className="text-sm">EXECUTION_PARAMS</CardTitle>
+            <CardTitle className="text-sm">Execution parameters</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -112,7 +112,7 @@ export default function ScanDetail() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <Bug className="w-4 h-4" />
-              IDENTIFIED_FINDINGS
+              Identified findings
             </CardTitle>
             <Badge variant="outline" className="font-mono border-border">
               {scan.findingCount || 0} TOTAL
@@ -172,12 +172,12 @@ export default function ScanDetail() {
                       <div className="absolute inset-0 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                       <Radar className="w-8 h-8 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                     </div>
-                    <p className="text-primary font-mono text-sm animate-pulse">ANALYZING_TARGET_RESPONSES...</p>
+                    <p className="text-muted-foreground text-sm animate-pulse">Analyzing target responses…</p>
                   </div>
                 ) : (
                   <div>
                     <Shield className="w-12 h-12 text-muted mx-auto mb-4" />
-                    <p className="text-muted-foreground font-mono text-sm">NO_VULNERABILITIES_DETECTED</p>
+                    <p className="text-muted-foreground font-mono text-sm">No vulnerabilities detected</p>
                   </div>
                 )}
               </div>

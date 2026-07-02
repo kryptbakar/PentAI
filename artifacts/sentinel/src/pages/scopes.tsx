@@ -60,12 +60,12 @@ function CreateScopeDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2 font-mono">
           <Plus className="w-4 h-4" />
-          NEW_SCOPE
+          New scope
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>DEFINE_AUTHORIZATION_SCOPE</DialogTitle>
+          <DialogTitle>Define authorization scope</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -76,7 +76,7 @@ function CreateScopeDialog() {
                 <FormItem>
                   <FormLabel>Scope Name / Code Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. OP_BLACKOUT" {...field} />
+                    <Input placeholder="e.g. Q3 External Assessment" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -158,7 +158,7 @@ function CreateScopeDialog() {
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>CANCEL</Button>
-              <Button type="submit" disabled={createScope.isPending}>AUTHORIZE_SCOPE</Button>
+              <Button type="submit" disabled={createScope.isPending}>Authorize scope</Button>
             </DialogFooter>
           </form>
         </Form>
@@ -170,17 +170,17 @@ function CreateScopeDialog() {
 export default function Scopes() {
   const { data: scopes } = useListScopes()
 
-  if (!scopes) return <div className="p-8 text-primary font-mono text-sm animate-pulse">FETCHING_SCOPES()...</div>
+  if (!scopes) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading scopes…</div>
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
-          <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+          <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
             <Shield className="w-6 h-6" />
-            AUTHORIZATION_SCOPES
+            Authorization scopes
           </h1>
-          <p className="text-muted-foreground text-sm font-mono mt-1">Manage Rules of Engagement (RoE) and scan boundaries</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage Rules of Engagement (RoE) and scan boundaries</p>
         </div>
         <CreateScopeDialog />
       </div>
@@ -200,7 +200,7 @@ export default function Scopes() {
                   <Lock className={`w-4 h-4 flex-shrink-0 ${scope.roeActive ? 'text-primary' : 'text-muted-foreground'}`} />
                 </CardTitle>
                 <div className="flex items-center gap-2 text-xs font-mono mt-2">
-                  <span className="text-muted-foreground">SIGNED_BY:</span>
+                  <span className="text-muted-foreground">Signed by:</span>
                   <span className="text-foreground truncate">{scope.signedBy}</span>
                 </div>
               </CardHeader>
@@ -225,7 +225,7 @@ export default function Scopes() {
         {scopes.length === 0 && (
           <div className="col-span-full p-12 text-center border border-dashed border-border">
             <Shield className="w-12 h-12 text-muted mx-auto mb-4" />
-            <p className="text-muted-foreground font-mono text-sm mb-4">NO_AUTHORIZATION_SCOPES_FOUND</p>
+            <p className="text-muted-foreground font-mono text-sm mb-4">No scopes yet</p>
             <CreateScopeDialog />
           </div>
         )}

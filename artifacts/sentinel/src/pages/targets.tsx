@@ -12,7 +12,7 @@ export default function Targets() {
   const { data: targets } = useListTargets()
   const [search, setSearch] = useState("")
 
-  if (!targets) return <div className="p-8 text-primary font-mono text-sm animate-pulse">FETCHING_TARGETS()...</div>
+  if (!targets) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading targets…</div>
 
   const filteredTargets = targets.filter(t => 
     t.host.toLowerCase().includes(search.toLowerCase()) || 
@@ -24,11 +24,11 @@ export default function Targets() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-border pb-4 gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+          <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
             <Target className="w-6 h-6" />
-            GLOBAL_TARGETS
+            Global targets
           </h1>
-          <p className="text-muted-foreground text-sm font-mono mt-1">Master list of all authorized targets across scopes</p>
+          <p className="text-muted-foreground text-sm mt-1">Master list of all authorized targets across scopes</p>
         </div>
         <div className="relative w-full md:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -58,7 +58,7 @@ export default function Targets() {
               {filteredTargets.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                    NO_TARGETS_FOUND
+                    No targets yet
                   </TableCell>
                 </TableRow>
               ) : (
@@ -82,7 +82,7 @@ export default function Targets() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs font-mono">
-                      {target.portRange || "ALL_PORTS"}
+                      {target.portRange || "All ports"}
                     </TableCell>
                     <TableCell>
                       {target.allowed ? (
@@ -98,7 +98,7 @@ export default function Targets() {
                         </Badge>
                       ) : target.allowed ? (
                         <Badge variant="outline" className="text-muted-foreground border-border max-w-fit">
-                          RECON_ONLY
+                          Recon only
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground text-xs">-</span>
@@ -107,7 +107,7 @@ export default function Targets() {
                     <TableCell className="text-right">
                       <Link href={`/scans?targetId=${target.id}`}>
                         <Button variant="outline" size="sm" className="font-mono text-xs h-8">
-                          VIEW_SCANS
+                          View scans
                         </Button>
                       </Link>
                     </TableCell>

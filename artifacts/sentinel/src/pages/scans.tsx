@@ -74,16 +74,16 @@ function StartScanDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 font-mono bg-primary text-black hover:bg-primary/90">
+        <Button className="gap-2">
           <Play className="w-4 h-4" />
-          START_SCAN
+          New scan
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Terminal className="w-5 h-5" />
-            INITIALIZE_SCAN_JOB
+            New scan
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -215,7 +215,7 @@ function StartScanDialog() {
             <DialogFooter className="mt-6 pt-4 border-t border-border">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>ABORT</Button>
               <Button type="submit" disabled={!isAuthorized || isExploitBlocked || createScan.isPending}>
-                EXECUTE_JOB
+                Launch scan
               </Button>
             </DialogFooter>
           </form>
@@ -234,17 +234,17 @@ export default function Scans() {
   
   const { data: scans } = useListScans({ status: statusParam, targetId: targetIdParam })
 
-  if (!scans) return <div className="p-8 text-primary font-mono text-sm animate-pulse">FETCHING_SCAN_LOGS()...</div>
+  if (!scans) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading scans…</div>
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-border pb-4 gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+          <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
             <Radar className="w-6 h-6" />
-            SCAN_JOBS
+            Scans
           </h1>
-          <p className="text-muted-foreground text-sm font-mono mt-1">Monitor and manage active scanning operations</p>
+          <p className="text-muted-foreground text-sm mt-1">Monitor and manage active scanning operations</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" className="font-mono h-10 border-dashed">
@@ -273,7 +273,7 @@ export default function Scans() {
               {scans.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                    NO_SCANS_LOGGED
+                    No scans yet
                   </TableCell>
                 </TableRow>
               ) : (

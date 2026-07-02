@@ -12,7 +12,7 @@ export default function FindingDetail() {
   
   const { data: finding } = useGetFinding(findingId, { query: { enabled: !!findingId, queryKey: ['finding', findingId] } })
 
-  if (!finding) return <div className="p-8 text-primary font-mono text-sm animate-pulse">DECRYPTING_FINDING_DATA()...</div>
+  if (!finding) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading finding…</div>
 
   return (
     <div className="space-y-6">
@@ -25,7 +25,7 @@ export default function FindingDetail() {
             <Badge variant={finding.severity as any} className="w-fit text-sm px-3 py-1">
               {finding.severity}
             </Badge>
-            <h1 className="text-xl md:text-2xl font-bold font-mono text-primary truncate" title={finding.title}>
+            <h1 className="text-xl md:text-2xl font-bold font-display text-foreground truncate" title={finding.title}>
               {finding.title}
             </h1>
           </div>
@@ -43,7 +43,7 @@ export default function FindingDetail() {
             <CardHeader className="bg-muted/20 border-b border-border">
               <CardTitle className="text-sm flex items-center gap-2">
                 <FileCode2 className="w-4 h-4" />
-                VULNERABILITY_DESCRIPTION
+                Description
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -62,7 +62,7 @@ export default function FindingDetail() {
               <CardHeader className="bg-destructive/10 border-b border-destructive/20">
                 <CardTitle className="text-sm flex items-center gap-2 text-destructive">
                   <Zap className="w-4 h-4" />
-                  PROOF_OF_CONCEPT
+                  Proof of concept
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -78,7 +78,7 @@ export default function FindingDetail() {
               <CardHeader className="bg-muted/20 border-b border-border">
                 <CardTitle className="text-sm flex items-center gap-2 text-primary">
                   <ShieldAlert className="w-4 h-4" />
-                  REMEDIATION_GUIDANCE
+                  Remediation
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
@@ -113,7 +113,7 @@ export default function FindingDetail() {
                     ))}
                   </div>
                 ) : (
-                  <span className="text-muted-foreground text-xs font-mono">NO_CVE_MAPPINGS</span>
+                  <span className="text-muted-foreground text-xs font-mono">No CVE mappings</span>
                 )}
               </div>
               
@@ -134,7 +134,7 @@ export default function FindingDetail() {
               <CardHeader className="py-3">
                 <CardTitle className="text-xs flex items-center gap-2 text-muted-foreground">
                   <Code className="w-3 h-3" />
-                  RAW_OUTPUT
+                  Raw output
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 border-t border-border">

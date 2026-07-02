@@ -18,7 +18,7 @@ export default function Findings() {
   const { data: severityStats } = useGetFindingsBySeverity()
   const [search, setSearch] = useState("")
 
-  if (!findings || !severityStats) return <div className="p-8 text-primary font-mono text-sm animate-pulse">LOADING_VULNERABILITY_DB()...</div>
+  if (!findings || !severityStats) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading findings…</div>
 
   const filteredFindings = findings.filter(f => 
     f.title.toLowerCase().includes(search.toLowerCase()) || 
@@ -33,11 +33,11 @@ export default function Findings() {
     <div className="space-y-6 flex flex-col h-[calc(100vh-4rem)]">
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-border pb-4 gap-4 flex-shrink-0">
         <div>
-          <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+          <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
             <ShieldAlert className="w-6 h-6" />
-            VULNERABILITY_FINDINGS
+            Findings
           </h1>
-          <p className="text-muted-foreground text-sm font-mono mt-1">Aggregated security issues across all scopes</p>
+          <p className="text-muted-foreground text-sm mt-1">Aggregated security issues across all scopes</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative w-full md:w-64">
@@ -59,7 +59,7 @@ export default function Findings() {
         <div className="md:col-span-1 space-y-4 flex-shrink-0">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">SEVERITY_INDEX</CardTitle>
+              <CardTitle className="text-sm">Severity index</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Link href="/findings?severity=critical">
@@ -95,7 +95,7 @@ export default function Findings() {
               
               {severityParam && (
                 <Link href="/findings" className="block text-center text-xs font-mono text-muted-foreground hover:text-primary pt-2">
-                  [CLEAR_FILTERS]
+                  [Clear filters]
                 </Link>
               )}
             </CardContent>
@@ -119,7 +119,7 @@ export default function Findings() {
                   <TableRow>
                     <TableCell colSpan={5} className="h-64 text-center">
                       <ShieldAlert className="w-12 h-12 text-muted mx-auto mb-4 opacity-50" />
-                      <span className="text-muted-foreground font-mono">NO_FINDINGS_MATCH_CRITERIA</span>
+                      <span className="text-muted-foreground font-mono">No findings match your filters</span>
                     </TableCell>
                   </TableRow>
                 ) : (

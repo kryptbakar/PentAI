@@ -7,21 +7,21 @@ import { format } from "date-fns"
 export default function AuditLog() {
   const { data: auditLogs } = useListAuditEntries({ limit: 100 })
 
-  if (!auditLogs) return <div className="p-8 text-primary font-mono text-sm animate-pulse">FETCHING_IMMUTABLE_LOGS()...</div>
+  if (!auditLogs) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading audit log…</div>
 
   return (
     <div className="space-y-6 flex flex-col h-[calc(100vh-4rem)]">
       <div className="flex items-center justify-between border-b border-border pb-4 flex-shrink-0">
         <div>
-          <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+          <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
             <ScrollText className="w-6 h-6" />
-            IMMUTABLE_AUDIT_LOG
+            Immutable audit log
           </h1>
-          <p className="text-muted-foreground text-sm font-mono mt-1">Verifiable record of all operator actions and authorization checks</p>
+          <p className="text-muted-foreground text-sm mt-1">Verifiable record of all operator actions and authorization checks</p>
         </div>
         <div className="flex items-center gap-2 text-xs font-mono text-green-500 bg-green-500/10 px-3 py-1 border border-green-500/20">
           <Shield className="w-3 h-3" />
-          CRYPTOGRAPHICALLY_SEALED
+          Cryptographically sealed
         </div>
       </div>
 
@@ -29,7 +29,7 @@ export default function AuditLog() {
         <CardHeader className="bg-muted/10 py-3 border-b border-border flex-shrink-0">
           <CardTitle className="text-xs font-mono flex items-center gap-2 text-muted-foreground">
             <div className="w-2 h-2 rounded-full bg-destructive animate-pulse"></div>
-            RECORDING_ACTIVE
+            Recording
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0 overflow-auto flex-1">
@@ -48,7 +48,7 @@ export default function AuditLog() {
               {auditLogs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-64 text-center text-muted-foreground">
-                    NO_AUDIT_RECORDS
+                    No audit records
                   </TableCell>
                 </TableRow>
               ) : (

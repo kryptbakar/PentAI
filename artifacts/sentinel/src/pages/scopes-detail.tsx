@@ -64,7 +64,7 @@ export default function ScopeDetail() {
     })
   }
 
-  if (!scope) return <div className="p-8 text-primary font-mono text-sm animate-pulse">FETCHING_SCOPE_DATA()...</div>
+  if (!scope) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading scope…</div>
 
   return (
     <div className="space-y-6">
@@ -74,22 +74,22 @@ export default function ScopeDetail() {
         </Link>
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold font-mono text-primary flex items-center gap-2">
+            <h1 className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
               <Shield className="w-6 h-6" />
               {scope.name}
             </h1>
             <Badge variant={scope.roeActive ? "default" : "destructive"}>
-              {scope.roeActive ? "ROE_ACTIVE" : "ROE_INACTIVE"}
+              {scope.roeActive ? "RoE active" : "RoE inactive"}
             </Badge>
           </div>
-          <p className="text-muted-foreground text-sm font-mono mt-1">Scope details and targets</p>
+          <p className="text-muted-foreground text-sm mt-1">Scope details and targets</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle className="text-sm">SCOPE_METADATA</CardTitle>
+            <CardTitle className="text-sm">Scope details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -115,17 +115,17 @@ export default function ScopeDetail() {
 
         <Card className="md:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm">AUTHORIZED_TARGETS</CardTitle>
+            <CardTitle className="text-sm">Authorized targets</CardTitle>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="font-mono h-8">
                   <Plus className="w-3 h-3 mr-2" />
-                  ADD_TARGET
+                  Add target
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>ADD_TARGET_TO_SCOPE</DialogTitle>
+                  <DialogTitle>Add target to scope</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -225,7 +225,7 @@ export default function ScopeDetail() {
                     />
                     <DialogFooter>
                       <Button type="button" variant="outline" onClick={() => setOpen(false)}>CANCEL</Button>
-                      <Button type="submit" disabled={createTarget.isPending}>SAVE_TARGET</Button>
+                      <Button type="submit" disabled={createTarget.isPending}>Save target</Button>
                     </DialogFooter>
                   </form>
                 </Form>
@@ -288,7 +288,7 @@ export default function ScopeDetail() {
             ) : (
               <div className="p-8 text-center">
                 <Target className="w-8 h-8 text-muted mx-auto mb-2" />
-                <p className="text-muted-foreground font-mono text-sm">NO_TARGETS_IN_SCOPE</p>
+                <p className="text-muted-foreground font-mono text-sm">No targets in scope</p>
               </div>
             )}
           </CardContent>
@@ -298,7 +298,7 @@ export default function ScopeDetail() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <Radar className="w-4 h-4" />
-              SCOPE_SCAN_HISTORY
+              Scan history
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -356,7 +356,7 @@ export default function ScopeDetail() {
             ) : (
               <div className="p-8 text-center">
                 <Radar className="w-8 h-8 text-muted mx-auto mb-2" />
-                <p className="text-muted-foreground font-mono text-sm">NO_SCANS_FOR_THIS_SCOPE</p>
+                <p className="text-muted-foreground font-mono text-sm">No scans for this scope</p>
               </div>
             )}
           </CardContent>
