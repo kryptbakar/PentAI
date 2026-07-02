@@ -9,6 +9,7 @@ import {
   ListReportsResponse,
 } from "@workspace/api-zod";
 import { count } from "drizzle-orm";
+import { analyzeFindings, renderAnalysisSummary } from "../services/ai";
 
 const router: IRouter = Router();
 
@@ -66,14 +67,39 @@ router.post("/reports", async (req, res): Promise<void> => {
     ...findings.map((f) => `[${f.severity.toUpperCase()}] ${f.title}`),
   ];
 
+  // AI enrichment — executive/technical summary, business-risk ranking and
+  // cross-tool deduplication. Falls back to the deterministic summary when the
+  // AI layer is disabled or errors, so report generation never fails on it.
+  const analysis = await analyzeFindings({
+    host: target?.host ?? "unknown",
+    tool: scan.tool,
+    phase: scan.phase,
+    findings: findings.map((f) => ({
+      tool: f.tool,
+      severity: f.severity,
+      title: f.title,
+      description: f.description,
+      evidence: f.evidence,
+      cveRefs: f.cveRefs,
+    })),
+  });
+
+  const deterministicSummary = summaryLines.join("\n");
+  const summary = analysis
+    ? `${renderAnalysisSummary(analysis)}\n\n─── RAW ───\n${deterministicSummary}`
+    : deterministicSummary;
+
   const [report] = await db
     .insert(reportsTable)
     .values({
       scanId: parsed.data.scanId,
       format: parsed.data.format,
-      summary: summaryLines.join("\n"),
+      summary,
       findingCount: Number(fc),
-      content: parsed.data.format === "json" ? JSON.stringify({ scan, findings }, null, 2) : summaryLines.join("\n"),
+      content:
+        parsed.data.format === "json"
+          ? JSON.stringify({ scan, findings, aiAnalysis: analysis }, null, 2)
+          : summary,
     })
     .returning();
 

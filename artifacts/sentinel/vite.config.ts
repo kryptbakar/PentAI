@@ -63,6 +63,17 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // Split heavy, rarely-changing libraries into their own long-cached
+        // chunks so the app code and vendor code cache independently.
+        manualChunks: {
+          react: ['react', 'react-dom', 'wouter'],
+          charts: ['recharts'],
+          query: ['@tanstack/react-query'],
+        },
+      },
+    },
   },
   server: {
     port,

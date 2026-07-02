@@ -37,6 +37,13 @@ tool from a liability: **you can only scan what you are authorized to scan.**
   attempt is written to an append-only audit log.
 - **Real tools, not mock output.** Recon and scanning are executed by industry-standard
   tools (nmap, subfinder, httpx, nuclei), each isolated in a throwaway container.
+- **AI analysis, not just raw output.** When an API key is configured, Claude turns raw
+  findings into an executive + technical summary, re-ranks them by real-world **business
+  risk**, **deduplicates** overlapping findings across tools, and writes concrete
+  remediation — attached to every generated report.
+- **Safe by default.** A hard SSRF / internal-target guard refuses loopback, RFC1918,
+  link-local, and cloud-metadata (169.254.169.254) addresses; tool arguments never touch a
+  shell. Covered by a unit-tested suite that runs in CI.
 - **A console that looks the part.** A premium, glassmorphic dashboard with live scan
   status, severity analytics, findings with CVE references and remediation, and
   exportable engagement reports.
@@ -68,11 +75,26 @@ target — a deliberate safety boundary, not an oversight.
 
 PentAI is a contract-first TypeScript monorepo (pnpm workspaces).
 
+```mermaid
+flowchart LR
+    U([User: example.com]) --> API[Express API]
+    API --> GATE{{Authorization gate<br/>allow-list · RoE · window}}
+    GATE -->|denied| AUDIT[(Append-only<br/>audit log)]
+    GATE -->|allowed· SSRF-checked| ADP[Tool adapters<br/>nmap · subfinder<br/>httpx · nuclei]
+    GATE --> AUDIT
+    ADP --> F[(Findings<br/>PostgreSQL)]
+    F --> AI[AI analysis<br/>Claude: triage · dedup<br/>summary · remediation]
+    AI --> R[Reports]
+    F --> DASH[React dashboard]
+    R --> DASH
+```
+
 | Layer | What it does | Tech |
 | --- | --- | --- |
 | **`artifacts/sentinel`** | Security operations dashboard | React 19, Vite 7, Tailwind v4, TanStack Query, Recharts, wouter |
 | **`artifacts/api-server`** | REST API, authorization gate, tool orchestration | Express 5, Zod |
 | **`api-server/src/adapters`** | Containerised tool runners (nmap, subfinder, httpx, nuclei) | Docker |
+| **`api-server/src/services`** | Authorization gate, SSRF guard, AI analysis | Claude (`@anthropic-ai/sdk`) |
 | **`lib/db`** | Schema: scopes, targets, scans, findings, audit, reports | PostgreSQL, Drizzle ORM |
 | **`lib/api-spec`** | Single source of truth for every API contract | OpenAPI |
 | **`lib/api-client-react` / `lib/api-zod`** | Generated React Query hooks + Zod validators | Orval codegen |
@@ -137,10 +159,14 @@ pnpm --filter @workspace/api-spec run codegen   # regenerate hooks & validators 
 
 ## Roadmap
 
-- Durable job workers (BullMQ) replacing in-process scan execution
-- AI-assisted triage and natural-language finding summaries
-- Additional adapters (sqlmap, ffuf, nikto) behind the same authorization gate
-- Multi-tenant workspaces and role-based access
+- [x] AI-assisted triage, deduplication and natural-language finding summaries
+- [x] SSRF / internal-target guard + unit tests + CI
+- [ ] Durable job workers (BullMQ) replacing in-process scan execution
+- [ ] Live scan progress streaming (SSE) to the dashboard
+- [ ] Continuous monitoring: scheduled re-scans + findings diff over time
+- [ ] Additional adapters (sqlmap, ffuf, nikto, TLS/header analysis) behind the gate
+- [ ] Authentication, multi-tenant workspaces and role-based access
+- [ ] Live hosted demo
 
 ## Responsible use
 

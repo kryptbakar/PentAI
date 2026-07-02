@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db, targetsTable, scopesTable, auditEntriesTable, type Target, type Scope } from "@workspace/db";
+import { assertPublicHost, UnsafeTargetError } from "./net-guard";
 
 export type AuthorizationResult =
   | { ok: true; target: Target; scope: Scope }
@@ -60,6 +61,17 @@ export async function authorizeTarget(
   // 4. Exploit phase requires active mode enabled on target
   if (phase === "exploit" && !target.activeModeEnabled) {
     return deny("Active/exploit mode is not enabled for this target");
+  }
+
+  // 5. SSRF / internal-target guard — never let tooling hit loopback, the
+  //    RFC1918 LAN, link-local, or the cloud metadata endpoint.
+  try {
+    await assertPublicHost(target.host);
+  } catch (err) {
+    if (err instanceof UnsafeTargetError) {
+      return deny(err.message);
+    }
+    throw err;
   }
 
   await db.insert(auditEntriesTable).values({

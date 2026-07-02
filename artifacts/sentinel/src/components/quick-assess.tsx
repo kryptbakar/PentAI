@@ -39,6 +39,7 @@ const TOOLCHAIN = [
   { tool: "subfinder", phase: "recon" as const, label: "Subdomain enumeration", icon: Network },
   { tool: "httpx", phase: "recon" as const, label: "HTTP fingerprinting", icon: Fingerprint },
   { tool: "nmap", phase: "recon" as const, label: "Port & service discovery", icon: Radar },
+  { tool: "headers", phase: "scan" as const, label: "Security header analysis", icon: ShieldCheck },
   { tool: "nuclei", phase: "scan" as const, label: "Vulnerability templates (CVE)", icon: Bug },
 ]
 

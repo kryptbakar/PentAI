@@ -1,5 +1,6 @@
 import { useListScans, useCreateScan, useListScopes, useListTargets } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Badge, StatusIndicator } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -234,7 +235,18 @@ export default function Scans() {
   
   const { data: scans } = useListScans({ status: statusParam, targetId: targetIdParam })
 
-  if (!scans) return <div className="p-8 text-muted-foreground text-sm animate-pulse">Loading scans…</div>
+  if (!scans) return (
+    <div className="space-y-4">
+      <Skeleton className="h-9 w-48" />
+      <Card>
+        <CardContent className="space-y-3 p-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  )
 
   return (
     <div className="space-y-6">
