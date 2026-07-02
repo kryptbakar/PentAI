@@ -19,5 +19,9 @@ export interface Target {
   activeModeEnabled: boolean;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  verifiedAt?: string | null;
+  /** @nullable */
+  verificationToken?: string | null;
   createdAt: string;
 }

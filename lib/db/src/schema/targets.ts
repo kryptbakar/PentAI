@@ -12,6 +12,9 @@ export const targetsTable = pgTable("targets", {
   allowed: boolean("allowed").notNull().default(true),
   activeModeEnabled: boolean("active_mode_enabled").notNull().default(false),
   notes: text("notes"),
+  // Domain-ownership verification (DNS TXT proof).
+  verificationToken: text("verification_token"),
+  verifiedAt: timestamp("verified_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

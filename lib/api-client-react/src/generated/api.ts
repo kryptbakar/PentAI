@@ -25,6 +25,7 @@ import type {
   DashboardSummary,
   Finding,
   FindingUpdate,
+  FindingsDiff,
   GetRecentActivityParams,
   HealthStatus,
   ListAuditEntriesParams,
@@ -41,7 +42,8 @@ import type {
   SeveritySummary,
   Target,
   TargetInput,
-  TargetUpdate
+  TargetUpdate,
+  TargetVerification
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -884,6 +886,153 @@ export const useDeleteTarget = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getDeleteTargetMutationOptions(options));
     }
+
+export const getVerifyTargetUrl = (id: number,) => {
+
+
+
+
+  return `/api/targets/${id}/verify`
+}
+
+/**
+ * @summary Issue/check a DNS-TXT domain-ownership proof for a target
+ */
+export const verifyTarget = async (id: number, options?: RequestInit): Promise<TargetVerification> => {
+
+  return customFetch<TargetVerification>(getVerifyTargetUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getVerifyTargetMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyTarget>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyTarget>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['verifyTarget'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyTarget>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  verifyTarget(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyTargetMutationResult = NonNullable<Awaited<ReturnType<typeof verifyTarget>>>
+
+    export type VerifyTargetMutationError = ErrorType<void>
+
+    /**
+ * @summary Issue/check a DNS-TXT domain-ownership proof for a target
+ */
+export const useVerifyTarget = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyTarget>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyTarget>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getVerifyTargetMutationOptions(options));
+    }
+
+export const getGetTargetFindingsDiffUrl = (id: number,) => {
+
+
+
+
+  return `/api/targets/${id}/findings-diff`
+}
+
+/**
+ * @summary New vs resolved findings between a target's two most recent completed scans
+ */
+export const getTargetFindingsDiff = async (id: number, options?: RequestInit): Promise<FindingsDiff> => {
+
+  return customFetch<FindingsDiff>(getGetTargetFindingsDiffUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTargetFindingsDiffQueryKey = (id: number,) => {
+    return [
+    `/api/targets/${id}/findings-diff`
+    ] as const;
+    }
+
+
+export const getGetTargetFindingsDiffQueryOptions = <TData = Awaited<ReturnType<typeof getTargetFindingsDiff>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTargetFindingsDiff>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTargetFindingsDiffQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTargetFindingsDiff>>> = ({ signal }) => getTargetFindingsDiff(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTargetFindingsDiff>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTargetFindingsDiffQueryResult = NonNullable<Awaited<ReturnType<typeof getTargetFindingsDiff>>>
+export type GetTargetFindingsDiffQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary New vs resolved findings between a target's two most recent completed scans
+ */
+
+export function useGetTargetFindingsDiff<TData = Awaited<ReturnType<typeof getTargetFindingsDiff>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTargetFindingsDiff>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTargetFindingsDiffQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListScansUrl = (params?: ListScansParams,) => {
   const normalizedParams = new URLSearchParams();

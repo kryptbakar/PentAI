@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db, targetsTable, scopesTable } from "@workspace/db";
+import { eq, and, desc } from "drizzle-orm";
+import { db, targetsTable, scopesTable, scansTable, findingsTable } from "@workspace/db";
 import {
   CreateTargetBody,
   CreateTargetResponse,
@@ -12,7 +12,16 @@ import {
   DeleteTargetParams,
   ListTargetsQueryParams,
   ListTargetsResponse,
+  VerifyTargetParams,
+  VerifyTargetResponse,
+  GetTargetFindingsDiffParams,
+  GetTargetFindingsDiffResponse,
 } from "@workspace/api-zod";
+import {
+  newVerificationToken,
+  expectedTxtValue,
+  checkDomainOwnership,
+} from "../services/domain-verify";
 
 const router: IRouter = Router();
 
@@ -23,6 +32,8 @@ function formatTarget(target: typeof targetsTable.$inferSelect, scopeName?: stri
     ip: target.ip ?? null,
     portRange: target.portRange ?? null,
     notes: target.notes ?? null,
+    verificationToken: target.verificationToken ?? null,
+    verifiedAt: target.verifiedAt?.toISOString() ?? null,
     createdAt: target.createdAt.toISOString(),
   };
 }
@@ -125,6 +136,108 @@ router.delete("/targets/:id", async (req, res): Promise<void> => {
   }
 
   res.sendStatus(204);
+});
+
+function formatFindingRow(finding: typeof findingsTable.$inferSelect, host: string) {
+  return {
+    ...finding,
+    targetHost: host,
+    cveRefs: finding.cveRefs ?? [],
+    description: finding.description ?? null,
+    evidence: finding.evidence ?? null,
+    remediation: finding.remediation ?? null,
+    raw: finding.raw ?? null,
+    createdAt: finding.createdAt.toISOString(),
+  };
+}
+
+// Issue a verification token (first call) and check the domain's TXT records
+// for the proof. On success, stamp verifiedAt.
+router.post("/targets/:id/verify", async (req, res): Promise<void> => {
+  const params = VerifyTargetParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [target] = await db.select().from(targetsTable).where(eq(targetsTable.id, params.data.id));
+  if (!target) {
+    res.status(404).json({ error: "Target not found" });
+    return;
+  }
+
+  let token = target.verificationToken;
+  if (!token) {
+    token = newVerificationToken();
+    await db.update(targetsTable).set({ verificationToken: token }).where(eq(targetsTable.id, target.id));
+  }
+
+  const verified = await checkDomainOwnership(target.host, token);
+  let verifiedAt = target.verifiedAt;
+  if (verified && !verifiedAt) {
+    verifiedAt = new Date();
+    await db.update(targetsTable).set({ verifiedAt }).where(eq(targetsTable.id, target.id));
+  }
+
+  res.json(
+    VerifyTargetResponse.parse({
+      verified,
+      token,
+      record: expectedTxtValue(token),
+      verifiedAt: verifiedAt?.toISOString() ?? null,
+      message: verified
+        ? "Ownership verified via DNS TXT record."
+        : `Publish a TXT record on ${target.host} with the value below, then verify again. DNS changes can take a few minutes to propagate.`,
+    }),
+  );
+});
+
+// Diff the two most recent completed scans for a target: what's new, what's resolved.
+router.get("/targets/:id/findings-diff", async (req, res): Promise<void> => {
+  const params = GetTargetFindingsDiffParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [target] = await db.select().from(targetsTable).where(eq(targetsTable.id, params.data.id));
+
+  const recentScans = await db
+    .select()
+    .from(scansTable)
+    .where(and(eq(scansTable.targetId, params.data.id), eq(scansTable.status, "completed")))
+    .orderBy(desc(scansTable.completedAt))
+    .limit(2);
+
+  const [latest, previous] = recentScans;
+
+  const findingsFor = async (
+    scanId?: number,
+  ): Promise<(typeof findingsTable.$inferSelect)[]> =>
+    scanId
+      ? db.select().from(findingsTable).where(eq(findingsTable.scanId, scanId))
+      : [];
+
+  const latestFindings = await findingsFor(latest?.id);
+  const previousFindings = await findingsFor(previous?.id);
+
+  const latestTitles = new Set(latestFindings.map((f) => f.title));
+  const previousTitles = new Set(previousFindings.map((f) => f.title));
+
+  const host = target?.host ?? "";
+  const added = latestFindings.filter((f) => !previousTitles.has(f.title)).map((f) => formatFindingRow(f, host));
+  const resolved = previousFindings.filter((f) => !latestTitles.has(f.title)).map((f) => formatFindingRow(f, host));
+  const unchanged = latestFindings.filter((f) => previousTitles.has(f.title)).length;
+
+  res.json(
+    GetTargetFindingsDiffResponse.parse({
+      latestScanId: latest?.id ?? null,
+      previousScanId: previous?.id ?? null,
+      unchanged,
+      added,
+      resolved,
+    }),
+  );
 });
 
 export default router;

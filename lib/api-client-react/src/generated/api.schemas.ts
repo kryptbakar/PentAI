@@ -57,7 +57,80 @@ export interface Target {
   activeModeEnabled: boolean;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  verifiedAt?: string | null;
+  /** @nullable */
+  verificationToken?: string | null;
   createdAt: string;
+}
+
+export interface TargetVerification {
+  verified: boolean;
+  token: string;
+  /** The DNS TXT record the domain owner must publish. */
+  record: string;
+  /** @nullable */
+  verifiedAt?: string | null;
+  message?: string;
+}
+
+export type FindingSeverity = typeof FindingSeverity[keyof typeof FindingSeverity];
+
+
+export const FindingSeverity = {
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+  info: 'info',
+} as const;
+
+export type FindingStatus = typeof FindingStatus[keyof typeof FindingStatus];
+
+
+export const FindingStatus = {
+  open: 'open',
+  triaged: 'triaged',
+  accepted_risk: 'accepted_risk',
+  fixed: 'fixed',
+  regressed: 'regressed',
+} as const;
+
+export interface Finding {
+  id: number;
+  scanId: number;
+  targetId: number;
+  targetHost?: string;
+  tool: string;
+  severity: FindingSeverity;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  evidence?: string | null;
+  cveRefs?: string[];
+  /** @nullable */
+  remediation?: string | null;
+  /** @nullable */
+  raw?: string | null;
+  status?: FindingStatus;
+  /** @nullable */
+  cvssScore?: string | null;
+  /** @nullable */
+  cwe?: string | null;
+  /** @nullable */
+  businessRisk?: string | null;
+  createdAt: string;
+}
+
+export interface FindingsDiff {
+  /** @nullable */
+  latestScanId?: number | null;
+  /** @nullable */
+  previousScanId?: number | null;
+  unchanged: number;
+  added: Finding[];
+  resolved: Finding[];
 }
 
 export interface TargetInput {
@@ -137,55 +210,6 @@ export interface ScanInput {
   tool: string;
   phase: ScanInputPhase;
   options?: ScanInputOptions;
-}
-
-export type FindingSeverity = typeof FindingSeverity[keyof typeof FindingSeverity];
-
-
-export const FindingSeverity = {
-  critical: 'critical',
-  high: 'high',
-  medium: 'medium',
-  low: 'low',
-  info: 'info',
-} as const;
-
-export type FindingStatus = typeof FindingStatus[keyof typeof FindingStatus];
-
-
-export const FindingStatus = {
-  open: 'open',
-  triaged: 'triaged',
-  accepted_risk: 'accepted_risk',
-  fixed: 'fixed',
-  regressed: 'regressed',
-} as const;
-
-export interface Finding {
-  id: number;
-  scanId: number;
-  targetId: number;
-  targetHost?: string;
-  tool: string;
-  severity: FindingSeverity;
-  title: string;
-  /** @nullable */
-  description?: string | null;
-  /** @nullable */
-  evidence?: string | null;
-  cveRefs?: string[];
-  /** @nullable */
-  remediation?: string | null;
-  /** @nullable */
-  raw?: string | null;
-  status?: FindingStatus;
-  /** @nullable */
-  cvssScore?: string | null;
-  /** @nullable */
-  cwe?: string | null;
-  /** @nullable */
-  businessRisk?: string | null;
-  createdAt: string;
 }
 
 export type FindingUpdateStatus = typeof FindingUpdateStatus[keyof typeof FindingUpdateStatus];

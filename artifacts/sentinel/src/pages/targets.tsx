@@ -1,12 +1,78 @@
-import { useListTargets } from "@workspace/api-client-react"
+import { useListTargets, useVerifyTarget, getListTargetsQueryKey } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Target, Server, AlertTriangle, Shield, Search } from "lucide-react"
+import { Target, Server, AlertTriangle, Shield, Search, BadgeCheck, Loader2, Copy } from "lucide-react"
 import { Link } from "wouter"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useQueryClient } from "@tanstack/react-query"
+
+function VerifyDialog({ targetId, host }: { targetId: number; host: string }) {
+  const queryClient = useQueryClient()
+  const verify = useVerifyTarget()
+  const [open, setOpen] = useState(false)
+  const result = verify.data
+
+  function run() {
+    verify.mutate(
+      { id: targetId },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: getListTargetsQueryKey() }) },
+    )
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o && !result) run() }}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs">
+          <BadgeCheck className="h-3.5 w-3.5" /> Verify
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <BadgeCheck className="h-5 w-5 text-primary" /> Verify ownership of {host}
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          Prove you control this domain by publishing the DNS TXT record below, then re-check.
+          Verification turns the allow-list into a real ownership proof.
+        </p>
+        {verify.isPending ? (
+          <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Checking DNS…
+          </div>
+        ) : result ? (
+          <div className="space-y-3">
+            {result.verified ? (
+              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+                ✓ {result.message}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+                {result.message}
+              </div>
+            )}
+            <div>
+              <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">TXT record value</div>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 truncate rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs">
+                  {result.record}
+                </code>
+                <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => navigator.clipboard?.writeText(result.record)}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <Button onClick={run} disabled={verify.isPending} className="w-full">Re-check DNS</Button>
+          </div>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 export default function Targets() {
   const { data: targets } = useListTargets()
@@ -70,7 +136,12 @@ export default function Targets() {
                           <Server className="w-4 h-4 text-primary" />
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-bold font-mono text-sm text-foreground">{target.host}</span>
+                          <span className="flex items-center gap-1.5 font-bold font-mono text-sm text-foreground">
+                            {target.host}
+                            {target.verifiedAt && (
+                              <BadgeCheck className="h-3.5 w-3.5 text-emerald-400" aria-label="Ownership verified" />
+                            )}
+                          </span>
                           {target.ip && <span className="text-[10px] font-mono text-muted-foreground">{target.ip}</span>}
                         </div>
                       </div>
@@ -105,11 +176,14 @@ export default function Targets() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/scans?targetId=${target.id}`}>
-                        <Button variant="outline" size="sm" className="font-mono text-xs h-8">
-                          View scans
-                        </Button>
-                      </Link>
+                      <div className="flex items-center justify-end gap-1">
+                        {!target.verifiedAt && <VerifyDialog targetId={target.id} host={target.host} />}
+                        <Link href={`/scans?targetId=${target.id}`}>
+                          <Button variant="outline" size="sm" className="font-mono text-xs h-8">
+                            View scans
+                          </Button>
+                        </Link>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

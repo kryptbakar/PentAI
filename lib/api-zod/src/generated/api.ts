@@ -138,6 +138,8 @@ export const ListTargetsResponseItem = zod.object({
   "allowed": zod.boolean(),
   "activeModeEnabled": zod.boolean(),
   "notes": zod.string().nullish(),
+  "verifiedAt": zod.string().nullish(),
+  "verificationToken": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListTargetsResponse = zod.array(ListTargetsResponseItem)
@@ -169,6 +171,8 @@ export const CreateTargetResponse = zod.object({
   "allowed": zod.boolean(),
   "activeModeEnabled": zod.boolean(),
   "notes": zod.string().nullish(),
+  "verifiedAt": zod.string().nullish(),
+  "verificationToken": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -190,6 +194,8 @@ export const GetTargetResponse = zod.object({
   "allowed": zod.boolean(),
   "activeModeEnabled": zod.boolean(),
   "notes": zod.string().nullish(),
+  "verifiedAt": zod.string().nullish(),
+  "verificationToken": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -220,6 +226,8 @@ export const UpdateTargetResponse = zod.object({
   "allowed": zod.boolean(),
   "activeModeEnabled": zod.boolean(),
   "notes": zod.string().nullish(),
+  "verifiedAt": zod.string().nullish(),
+  "verificationToken": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -232,6 +240,74 @@ export const DeleteTargetParams = zod.object({
 })
 
 export const DeleteTargetResponse = zod.void()
+
+
+/**
+ * @summary Issue/check a DNS-TXT domain-ownership proof for a target
+ */
+export const VerifyTargetParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const VerifyTargetResponse = zod.object({
+  "verified": zod.boolean(),
+  "token": zod.string(),
+  "record": zod.string().describe('The DNS TXT record the domain owner must publish.'),
+  "verifiedAt": zod.string().nullish(),
+  "message": zod.string().optional()
+})
+
+
+/**
+ * @summary New vs resolved findings between a target's two most recent completed scans
+ */
+export const GetTargetFindingsDiffParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetTargetFindingsDiffResponse = zod.object({
+  "latestScanId": zod.number().nullish(),
+  "previousScanId": zod.number().nullish(),
+  "unchanged": zod.number(),
+  "added": zod.array(zod.object({
+  "id": zod.number(),
+  "scanId": zod.number(),
+  "targetId": zod.number(),
+  "targetHost": zod.string().optional(),
+  "tool": zod.string(),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low', 'info']),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "evidence": zod.string().nullish(),
+  "cveRefs": zod.array(zod.string()).optional(),
+  "remediation": zod.string().nullish(),
+  "raw": zod.string().nullish(),
+  "status": zod.enum(['open', 'triaged', 'accepted_risk', 'fixed', 'regressed']).optional(),
+  "cvssScore": zod.string().nullish(),
+  "cwe": zod.string().nullish(),
+  "businessRisk": zod.string().nullish(),
+  "createdAt": zod.string()
+})),
+  "resolved": zod.array(zod.object({
+  "id": zod.number(),
+  "scanId": zod.number(),
+  "targetId": zod.number(),
+  "targetHost": zod.string().optional(),
+  "tool": zod.string(),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low', 'info']),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "evidence": zod.string().nullish(),
+  "cveRefs": zod.array(zod.string()).optional(),
+  "remediation": zod.string().nullish(),
+  "raw": zod.string().nullish(),
+  "status": zod.enum(['open', 'triaged', 'accepted_risk', 'fixed', 'regressed']).optional(),
+  "cvssScore": zod.string().nullish(),
+  "cwe": zod.string().nullish(),
+  "businessRisk": zod.string().nullish(),
+  "createdAt": zod.string()
+}))
+})
 
 
 /**

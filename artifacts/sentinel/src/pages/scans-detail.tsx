@@ -1,4 +1,4 @@
-import { useGetScan, useGetScanFindings, useCancelScan } from "@workspace/api-client-react"
+import { useGetScan, useGetScanFindings, useCancelScan, useGetTargetFindingsDiff } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge, StatusIndicator } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,13 @@ export default function ScanDetail() {
   const { data: scan } = useGetScan(scanId, { query: { enabled: !!scanId, queryKey: getGetScanQueryKey(scanId) } })
   const { data: findings } = useGetScanFindings(scanId, { query: { enabled: !!scanId, queryKey: ['scan-findings', scanId] } })
   const cancelScan = useCancelScan()
+  const targetId = scan?.targetId
+  const { data: diff } = useGetTargetFindingsDiff(targetId ?? 0, {
+    query: {
+      enabled: !!targetId && scan?.status === "completed",
+      queryKey: ["findings-diff", targetId],
+    },
+  })
 
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([])
   const status = scan?.status
@@ -193,9 +200,22 @@ export default function ScanDetail() {
               <Bug className="w-4 h-4" />
               Identified findings
             </CardTitle>
-            <Badge variant="outline" className="font-mono border-border">
-              {scan.findingCount || 0} TOTAL
-            </Badge>
+            <div className="flex items-center gap-2">
+              {diff && diff.previousScanId != null && (
+                <span className="flex items-center gap-2 text-xs">
+                  <span className="rounded-full bg-destructive/10 px-2 py-0.5 font-medium text-destructive">
+                    +{diff.added.length} new
+                  </span>
+                  <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-400">
+                    −{diff.resolved.length} resolved
+                  </span>
+                  <span className="text-muted-foreground">since last scan</span>
+                </span>
+              )}
+              <Badge variant="outline" className="font-mono border-border">
+                {scan.findingCount || 0} TOTAL
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {findings && findings.length > 0 ? (

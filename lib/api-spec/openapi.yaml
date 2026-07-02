@@ -224,6 +224,46 @@ paths:
         "204":
           description: Deleted
 
+  /targets/{id}/verify:
+    post:
+      operationId: verifyTarget
+      tags: [targets]
+      summary: Issue/check a DNS-TXT domain-ownership proof for a target
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Verification status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TargetVerification"
+        "404":
+          description: Not found
+
+  /targets/{id}/findings-diff:
+    get:
+      operationId: getTargetFindingsDiff
+      tags: [targets]
+      summary: New vs resolved findings between a target's two most recent completed scans
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Findings diff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindingsDiff"
+
   # ── Scans ────────────────────────────────────────────────────────────────
   /scans:
     get:
@@ -659,8 +699,47 @@ components:
           type: boolean
         notes:
           type: ["string", "null"]
+        verifiedAt:
+          type: ["string", "null"]
+        verificationToken:
+          type: ["string", "null"]
         createdAt:
           type: string
+
+    TargetVerification:
+      type: object
+      required: [verified, token, record]
+      properties:
+        verified:
+          type: boolean
+        token:
+          type: string
+        record:
+          type: string
+          description: The DNS TXT record the domain owner must publish.
+        verifiedAt:
+          type: ["string", "null"]
+        message:
+          type: string
+
+    FindingsDiff:
+      type: object
+      required: [added, resolved, unchanged]
+      properties:
+        latestScanId:
+          type: ["integer", "null"]
+        previousScanId:
+          type: ["integer", "null"]
+        unchanged:
+          type: integer
+        added:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+        resolved:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
 
     TargetInput:
       type: object
