@@ -69,6 +69,14 @@ export default defineConfig({
     strictPort: true,
     host: '0.0.0.0',
     allowedHosts: true,
+    // Local dev: the API client calls `/api/*` same-origin, so forward those
+    // to the Express API server (default :8080). Set API_PROXY_TARGET to override.
+    proxy: {
+      '/api': {
+        target: process.env.API_PROXY_TARGET || 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
     fs: {
       strict: true,
     },

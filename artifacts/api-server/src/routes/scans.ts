@@ -1,6 +1,9 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, scansTable, targetsTable, scopesTable, findingsTable, auditEntriesTable } from "@workspace/db";
+import { db, scansTable, targetsTable, scopesTable, findingsTable, type Target } from "@workspace/db";
+import { authorizeTarget } from "../services/authorization";
+import { adapterRegistry } from "../adapters/registry";
+import type { ToolAdapter } from "../adapters/types";
 import {
   CreateScanBody,
   CreateScanResponse,
@@ -40,6 +43,35 @@ async function enrichScan(scan: typeof scansTable.$inferSelect) {
     findingCount: Number(fc),
     createdAt: scan.createdAt.toISOString(),
   };
+}
+
+async function executeScan(
+  scanId: number,
+  target: Target,
+  adapter: ToolAdapter,
+  options: Record<string, unknown> | null
+): Promise<void> {
+  try {
+    const findings = await adapter.run(target, options);
+
+    for (const finding of findings) {
+      await db.insert(findingsTable).values({ ...finding, scanId, targetId: target.id });
+    }
+
+    await db
+      .update(scansTable)
+      .set({ status: "completed", completedAt: new Date() })
+      .where(eq(scansTable.id, scanId));
+  } catch (error) {
+    await db
+      .update(scansTable)
+      .set({
+        status: "failed",
+        completedAt: new Date(),
+        errorMessage: error instanceof Error ? error.message : String(error),
+      })
+      .where(eq(scansTable.id, scanId));
+  }
 }
 
 router.get("/scans/active", async (_req, res): Promise<void> => {
@@ -95,58 +127,19 @@ router.post("/scans", async (req, res): Promise<void> => {
   }
 
   // Authorization gate — hard chokepoint
-  const [target] = await db
-    .select()
-    .from(targetsTable)
-    .where(eq(targetsTable.id, parsed.data.targetId));
+  const auth = await authorizeTarget(
+    parsed.data.targetId,
+    parsed.data.phase,
+    parsed.data.tool,
+    JSON.stringify(parsed.data.options ?? {})
+  );
 
-  if (!target) {
-    res.status(403).json({ error: "Target not found or not authorized" });
+  if (!auth.ok) {
+    res.status(403).json({ error: auth.reason });
     return;
   }
 
-  const [scope] = await db.select().from(scopesTable).where(eq(scopesTable.id, target.scopeId));
-
-  const deny = async (reason: string) => {
-    await db.insert(auditEntriesTable).values({
-      operator: "system",
-      targetId: target.id,
-      tool: parsed.data.tool,
-      flags: reason,
-      authorizedBy: null,
-      outcome: "denied",
-    });
-    res.status(403).json({ error: reason });
-  };
-
-  // 1. Target must be on the allow-list
-  if (!target.allowed) {
-    await deny("Target is not on the authorization allow-list");
-    return;
-  }
-
-  // 2. Scope must have an active RoE record
-  if (!scope || !scope.roeActive) {
-    await deny("Scope rules-of-engagement are not active");
-    return;
-  }
-
-  // 3. Scope validity window
-  const now = new Date();
-  if (scope.validFrom && new Date(scope.validFrom) > now) {
-    await deny("Scope engagement has not started yet");
-    return;
-  }
-  if (scope.validUntil && new Date(scope.validUntil) < now) {
-    await deny("Scope engagement window has expired");
-    return;
-  }
-
-  // 4. Exploit phase requires active mode enabled on target
-  if (parsed.data.phase === "exploit" && !target.activeModeEnabled) {
-    await deny("Active/exploit mode is not enabled for this target");
-    return;
-  }
+  const { target, scope } = auth;
 
   const [scan] = await db
     .insert(scansTable)
@@ -160,55 +153,19 @@ router.post("/scans", async (req, res): Promise<void> => {
     })
     .returning();
 
-  // Audit log: allowed
-  await db.insert(auditEntriesTable).values({
-    operator: "system",
-    targetId: target.id,
-    tool: parsed.data.tool,
-    flags: JSON.stringify(parsed.data.options ?? {}),
-    authorizedBy: scope?.signedBy ?? null,
-    outcome: "allowed",
-  });
-
-  // Simulate scan completion after 3 seconds (for demo)
-  setTimeout(async () => {
+  const adapter = adapterRegistry.get(parsed.data.tool);
+  if (!adapter) {
     await db
       .update(scansTable)
-      .set({ status: "completed", completedAt: new Date() })
+      .set({
+        status: "failed",
+        completedAt: new Date(),
+        errorMessage: `Tool '${parsed.data.tool}' is not yet implemented`,
+      })
       .where(eq(scansTable.id, scan.id));
-
-    // Generate mock findings for demo
-    const mockFindings = [
-      {
-        scanId: scan.id,
-        targetId: target.id,
-        tool: parsed.data.tool,
-        severity: "high",
-        title: `Open port detected on ${target.host}`,
-        description: "A high-risk port is exposed without authentication.",
-        evidence: `PORT 22/tcp open ssh\nPORT 80/tcp open http`,
-        cveRefs: ["CVE-2023-1234"],
-        remediation: "Close unnecessary ports or add firewall rules to restrict access.",
-        raw: JSON.stringify({ host: target.host, ports: [22, 80] }),
-      },
-      {
-        scanId: scan.id,
-        targetId: target.id,
-        tool: parsed.data.tool,
-        severity: "medium",
-        title: `Missing security headers on ${target.host}`,
-        description: "The server response does not include recommended security headers.",
-        evidence: `HTTP/1.1 200 OK\nContent-Type: text/html\n(missing X-Frame-Options, CSP)`,
-        cveRefs: [],
-        remediation: "Add X-Frame-Options, Content-Security-Policy, and HSTS headers.",
-        raw: null,
-      },
-    ];
-
-    for (const f of mockFindings) {
-      await db.insert(findingsTable).values(f);
-    }
-  }, 3000);
+  } else {
+    void executeScan(scan.id, target, adapter, (parsed.data.options as Record<string, unknown> | null) ?? null);
+  }
 
   res.status(201).json(
     CreateScanResponse.parse({

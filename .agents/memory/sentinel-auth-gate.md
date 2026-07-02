@@ -13,3 +13,5 @@ Every scan creation must pass all four checks in order; any failure writes a den
 **Why:** The platform's core value proposition and legal safety is the authorization gate. Missing any check enables scans that should be blocked by policy (code review found this on first pass).
 
 **How to apply:** Any future scan trigger path (scheduled scans, AI orchestrator, batch runner) must call the same authorization logic — centralize it into a shared `authorize(targetId, phase)` helper rather than duplicating the checks.
+
+**Update:** Done — `authorizeTarget(targetId, phase, tool, flags?, operator?)` now lives in `artifacts/api-server/src/services/authorization.ts`. It runs all four checks above and writes the allowed/denied audit entry itself. `POST /scans` is the only caller today; the Phase-2 AI orchestrator should call it directly rather than re-implementing the gate.

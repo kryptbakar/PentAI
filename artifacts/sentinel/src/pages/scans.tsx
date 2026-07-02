@@ -188,6 +188,8 @@ function StartScanDialog() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="nmap">Nmap</SelectItem>
+                        <SelectItem value="subfinder">Subfinder</SelectItem>
+                        <SelectItem value="httpx">httpx</SelectItem>
                         <SelectItem value="masscan">Masscan</SelectItem>
                         <SelectItem value="nuclei">Nuclei</SelectItem>
                         <SelectItem value="metasploit">Metasploit</SelectItem>
