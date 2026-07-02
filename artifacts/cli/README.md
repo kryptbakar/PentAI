@@ -22,7 +22,7 @@ From the monorepo:
 
 ```bash
 pnpm install
-pnpm --filter pentai build
+pnpm --filter @kryptbakar/pentai build
 npm link ./artifacts/cli     # exposes `pentai` on your PATH
 ```
 
@@ -32,7 +32,7 @@ Or run the bundle directly without linking:
 alias pentai="node $PWD/artifacts/cli/dist/pentai.mjs"
 ```
 
-Once published, `npm install -g pentai` / `npx pentai` will work too.
+Once published, `npm install -g @kryptbakar/pentai` / `npx pentai` will work too.
 
 ## Usage
 
@@ -98,21 +98,21 @@ The package is self-contained — the engine and Anthropic SDK are bundled into
 
 ```bash
 # bump artifacts/cli/package.json "version" first, commit, then:
-git tag pentai-v1.0.0
-git push origin pentai-v1.0.0     # triggers .github/workflows/publish-cli.yml
+git tag pentai-v0.1.0
+git push origin pentai-v0.1.0     # triggers .github/workflows/publish-cli.yml
 ```
 
 **Option B — manual, from your machine:**
 
 ```bash
 npm login
-pnpm --filter pentai publish --no-git-checks --access public
+pnpm --filter @kryptbakar/pentai publish --no-git-checks --access public
 ```
 
 Verify the contents first with a dry run (no auth needed):
 
 ```bash
-pnpm --filter pentai publish --dry-run --no-git-checks
+pnpm --filter @kryptbakar/pentai publish --dry-run --no-git-checks
 ```
 
 ## Safety

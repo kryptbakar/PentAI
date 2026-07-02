@@ -81,11 +81,11 @@ Docker unlocks the container-based tools (`subfinder`, `httpx`, `nmap`,
 
 ```bash
 # Once published to npm:
-npm install -g pentai           # or: npx pentai scan example.com
+npm install -g @kryptbakar/pentai           # or: npx @kryptbakar/pentai scan example.com
 
 # From this repo (before publishing):
 pnpm install
-pnpm --filter pentai build
+pnpm --filter @kryptbakar/pentai build
 npm link ./artifacts/cli        # or: alias pentai="node $PWD/artifacts/cli/dist/pentai.mjs"
 
 # Scan a site you're authorized to test

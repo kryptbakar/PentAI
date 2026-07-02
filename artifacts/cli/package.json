@@ -1,6 +1,6 @@
 {
-  "name": "pentai",
-  "version": "1.0.0",
+  "name": "@kryptbakar/pentai",
+  "version": "0.1.0",
   "description": "Autonomous, authorization-first web pentesting from your terminal.",
   "license": "MIT",
   "author": "Muhammad Abubakar (kryptbakar)",

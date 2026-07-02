@@ -11,7 +11,7 @@ import {
   type FindingDraft,
 } from "@workspace/engine";
 
-const VERSION = "1.0.0";
+const VERSION = "0.1.0";
 
 // ── tiny ANSI colour helpers (no dependency) ────────────────────────────────
 const useColor = process.stdout.isTTY && process.env.NO_COLOR === undefined;

@@ -7,7 +7,7 @@ name: Publish pentai CLI
 # NPM_TOKEN (Settings → Secrets and variables → Actions).
 #
 # Release: bump artifacts/cli/package.json "version", commit, then either
-#   • push a tag `pentai-v<version>` (e.g. pentai-v1.0.0), or
+#   • push a tag `pentai-v<version>` (e.g. pentai-v0.1.0), or
 #   • run this workflow manually (Actions → Publish pentai CLI → Run workflow).
 on:
   push:
@@ -37,9 +37,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build the CLI
-        run: pnpm --filter pentai run build
+        run: pnpm --filter @kryptbakar/pentai run build
 
       - name: Publish to npm
-        run: pnpm --filter pentai publish --no-git-checks --access public
+        run: pnpm --filter @kryptbakar/pentai publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
