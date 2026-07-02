@@ -13,6 +13,18 @@ pnpm --filter @workspace/api-server run dev
 pnpm --filter @workspace/sentinel run dev
 ```
 
+## Working on the CLI
+
+The `pentai` CLI (`artifacts/cli`) is a standalone package — no database or
+Docker required for its in-process checks:
+
+```bash
+pnpm install
+pnpm --filter @kryptbakar/pentai run build
+pnpm --filter @kryptbakar/pentai run typecheck
+node artifacts/cli/dist/pentai.mjs scan example.com
+```
+
 ## Before opening a pull request
 
 Run the same checks CI runs:
