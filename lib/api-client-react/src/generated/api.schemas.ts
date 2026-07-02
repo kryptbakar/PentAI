@@ -61,6 +61,9 @@ export interface Target {
   verifiedAt?: string | null;
   /** @nullable */
   verificationToken?: string | null;
+  monitoringEnabled?: boolean;
+  /** @nullable */
+  monitoringIntervalHours?: number | null;
   createdAt: string;
 }
 
@@ -151,6 +154,9 @@ export interface TargetUpdate {
   allowed?: boolean;
   activeModeEnabled?: boolean;
   notes?: string;
+  monitoringEnabled?: boolean;
+  /** @nullable */
+  monitoringIntervalHours?: number | null;
 }
 
 export type ScanPhase = typeof ScanPhase[keyof typeof ScanPhase];

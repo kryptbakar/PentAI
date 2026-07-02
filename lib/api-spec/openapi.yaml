@@ -745,6 +745,10 @@ components:
           type: ["string", "null"]
         verificationToken:
           type: ["string", "null"]
+        monitoringEnabled:
+          type: boolean
+        monitoringIntervalHours:
+          type: ["integer", "null"]
         createdAt:
           type: string
 
@@ -818,6 +822,10 @@ components:
           type: boolean
         notes:
           type: string
+        monitoringEnabled:
+          type: boolean
+        monitoringIntervalHours:
+          type: ["integer", "null"]
 
     # ── Scan ─────────────────────────────────────────────────────────────
     Scan:

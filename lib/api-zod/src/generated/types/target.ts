@@ -23,5 +23,8 @@ export interface Target {
   verifiedAt?: string | null;
   /** @nullable */
   verificationToken?: string | null;
+  monitoringEnabled?: boolean;
+  /** @nullable */
+  monitoringIntervalHours?: number | null;
   createdAt: string;
 }

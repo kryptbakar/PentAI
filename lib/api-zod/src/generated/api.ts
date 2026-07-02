@@ -140,6 +140,8 @@ export const ListTargetsResponseItem = zod.object({
   "notes": zod.string().nullish(),
   "verifiedAt": zod.string().nullish(),
   "verificationToken": zod.string().nullish(),
+  "monitoringEnabled": zod.boolean().optional(),
+  "monitoringIntervalHours": zod.number().nullish(),
   "createdAt": zod.string()
 })
 export const ListTargetsResponse = zod.array(ListTargetsResponseItem)
@@ -173,6 +175,8 @@ export const CreateTargetResponse = zod.object({
   "notes": zod.string().nullish(),
   "verifiedAt": zod.string().nullish(),
   "verificationToken": zod.string().nullish(),
+  "monitoringEnabled": zod.boolean().optional(),
+  "monitoringIntervalHours": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -196,6 +200,8 @@ export const GetTargetResponse = zod.object({
   "notes": zod.string().nullish(),
   "verifiedAt": zod.string().nullish(),
   "verificationToken": zod.string().nullish(),
+  "monitoringEnabled": zod.boolean().optional(),
+  "monitoringIntervalHours": zod.number().nullish(),
   "createdAt": zod.string()
 })
 
@@ -213,7 +219,9 @@ export const UpdateTargetBody = zod.object({
   "portRange": zod.string().optional(),
   "allowed": zod.boolean().optional(),
   "activeModeEnabled": zod.boolean().optional(),
-  "notes": zod.string().optional()
+  "notes": zod.string().optional(),
+  "monitoringEnabled": zod.boolean().optional(),
+  "monitoringIntervalHours": zod.number().nullish()
 })
 
 export const UpdateTargetResponse = zod.object({
@@ -228,6 +236,8 @@ export const UpdateTargetResponse = zod.object({
   "notes": zod.string().nullish(),
   "verifiedAt": zod.string().nullish(),
   "verificationToken": zod.string().nullish(),
+  "monitoringEnabled": zod.boolean().optional(),
+  "monitoringIntervalHours": zod.number().nullish(),
   "createdAt": zod.string()
 })
 

@@ -1,11 +1,8 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, scansTable, targetsTable, scopesTable, findingsTable, type Target } from "@workspace/db";
-import { authorizeTarget } from "../services/authorization";
-import { adapterRegistry } from "../adapters/registry";
-import type { ToolAdapter } from "../adapters/types";
-import { emitScanEvent, subscribeScan } from "../services/scan-events";
-import { alertOnFindings } from "../services/alerts";
+import { db, scansTable, targetsTable, scopesTable, findingsTable } from "@workspace/db";
+import { subscribeScan } from "../services/scan-events";
+import { launchScan } from "../services/scan-runner";
 import {
   CreateScanBody,
   CreateScanResponse,
@@ -45,53 +42,6 @@ async function enrichScan(scan: typeof scansTable.$inferSelect) {
     findingCount: Number(fc),
     createdAt: scan.createdAt.toISOString(),
   };
-}
-
-async function executeScan(
-  scanId: number,
-  target: Target,
-  adapter: ToolAdapter,
-  options: Record<string, unknown> | null
-): Promise<void> {
-  try {
-    emitScanEvent({ type: "log", scanId, message: `Running ${adapter.name}…`, at: new Date().toISOString() });
-    const findings = await adapter.run(target, options);
-
-    for (const finding of findings) {
-      await db.insert(findingsTable).values({ ...finding, scanId, targetId: target.id });
-      emitScanEvent({
-        type: "finding",
-        scanId,
-        severity: finding.severity,
-        title: finding.title,
-        tool: finding.tool,
-        at: new Date().toISOString(),
-      });
-    }
-
-    await db
-      .update(scansTable)
-      .set({ status: "completed", completedAt: new Date() })
-      .where(eq(scansTable.id, scanId));
-    emitScanEvent({ type: "status", scanId, status: "completed", at: new Date().toISOString() });
-
-    // Fire outbound alerts for high-impact findings (no-op if unconfigured).
-    void alertOnFindings({
-      host: target.host,
-      scanId,
-      findings: findings.map((f) => ({ severity: f.severity, title: f.title })),
-    });
-  } catch (error) {
-    await db
-      .update(scansTable)
-      .set({
-        status: "failed",
-        completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : String(error),
-      })
-      .where(eq(scansTable.id, scanId));
-    emitScanEvent({ type: "status", scanId, status: "failed", at: new Date().toISOString() });
-  }
 }
 
 router.get("/scans/active", async (_req, res): Promise<void> => {
@@ -146,46 +96,20 @@ router.post("/scans", async (req, res): Promise<void> => {
     return;
   }
 
-  // Authorization gate — hard chokepoint
-  const auth = await authorizeTarget(
-    parsed.data.targetId,
-    parsed.data.phase,
-    parsed.data.tool,
-    JSON.stringify(parsed.data.options ?? {})
-  );
+  // Authorization gate + launch — hard chokepoint, shared with the scheduler.
+  const result = await launchScan({
+    targetId: parsed.data.targetId,
+    tool: parsed.data.tool,
+    phase: parsed.data.phase,
+    options: (parsed.data.options as Record<string, unknown> | null) ?? null,
+  });
 
-  if (!auth.ok) {
-    res.status(403).json({ error: auth.reason });
+  if (!result.ok) {
+    res.status(403).json({ error: result.reason });
     return;
   }
 
-  const { target, scope } = auth;
-
-  const [scan] = await db
-    .insert(scansTable)
-    .values({
-      targetId: parsed.data.targetId,
-      tool: parsed.data.tool,
-      phase: parsed.data.phase,
-      status: "running",
-      startedAt: new Date(),
-      options: parsed.data.options ?? null,
-    })
-    .returning();
-
-  const adapter = adapterRegistry.get(parsed.data.tool);
-  if (!adapter) {
-    await db
-      .update(scansTable)
-      .set({
-        status: "failed",
-        completedAt: new Date(),
-        errorMessage: `Tool '${parsed.data.tool}' is not yet implemented`,
-      })
-      .where(eq(scansTable.id, scan.id));
-  } else {
-    void executeScan(scan.id, target, adapter, (parsed.data.options as Record<string, unknown> | null) ?? null);
-  }
+  const { scan, target, scope } = result;
 
   res.status(201).json(
     CreateScanResponse.parse({

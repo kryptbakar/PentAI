@@ -1,14 +1,35 @@
-import { useListTargets, useVerifyTarget, getListTargetsQueryKey } from "@workspace/api-client-react"
+import { useListTargets, useVerifyTarget, useUpdateTarget, getListTargetsQueryKey } from "@workspace/api-client-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Target, Server, AlertTriangle, Shield, Search, BadgeCheck, Loader2, Copy } from "lucide-react"
+import { Target, Server, AlertTriangle, Shield, Search, BadgeCheck, Loader2, Copy, RefreshCw } from "lucide-react"
 import { Link } from "wouter"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useQueryClient } from "@tanstack/react-query"
+
+function MonitorToggle({ targetId, enabled }: { targetId: number; enabled: boolean }) {
+  const queryClient = useQueryClient()
+  const update = useUpdateTarget()
+  return (
+    <div className="flex items-center gap-1.5" title="Continuous monitoring — periodic re-scans">
+      <RefreshCw className={`h-3.5 w-3.5 ${enabled ? "text-primary" : "text-muted-foreground"}`} />
+      <Switch
+        checked={enabled}
+        disabled={update.isPending}
+        onCheckedChange={(monitoringEnabled) =>
+          update.mutate(
+            { id: targetId, data: { monitoringEnabled } },
+            { onSuccess: () => queryClient.invalidateQueries({ queryKey: getListTargetsQueryKey() }) },
+          )
+        }
+      />
+    </div>
+  )
+}
 
 function VerifyDialog({ targetId, host }: { targetId: number; host: string }) {
   const queryClient = useQueryClient()
@@ -117,13 +138,14 @@ export default function Targets() {
                 <TableHead>Ports</TableHead>
                 <TableHead>Authorization</TableHead>
                 <TableHead>Mode</TableHead>
+                <TableHead>Monitor</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTargets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                     No targets yet
                   </TableCell>
                 </TableRow>
@@ -174,6 +196,9 @@ export default function Targets() {
                       ) : (
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <MonitorToggle targetId={target.id} enabled={!!target.monitoringEnabled} />
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">

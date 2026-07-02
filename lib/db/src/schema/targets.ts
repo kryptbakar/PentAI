@@ -15,6 +15,9 @@ export const targetsTable = pgTable("targets", {
   // Domain-ownership verification (DNS TXT proof).
   verificationToken: text("verification_token"),
   verifiedAt: timestamp("verified_at"),
+  // Continuous monitoring: re-scan on a schedule.
+  monitoringEnabled: boolean("monitoring_enabled").notNull().default(false),
+  monitoringIntervalHours: integer("monitoring_interval_hours"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -13,4 +13,7 @@ export interface TargetUpdate {
   allowed?: boolean;
   activeModeEnabled?: boolean;
   notes?: string;
+  monitoringEnabled?: boolean;
+  /** @nullable */
+  monitoringIntervalHours?: number | null;
 }
