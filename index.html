@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PentAI — Autonomous, authorization-first web penetration testing</title>
+<meta name="description" content="PentAI provisions an authorized engagement scope and runs a full recon and vulnerability toolchain, streaming findings into a premium security operations console." />
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --bg-alt: #ffffff;
+    --text: #12151b;
+    --text-dim: #4b5563;
+    --accent: #16a34a;
+    --accent-2: #7c3aed;
+    --border: #e2e4e9;
+    --card-bg: #ffffff;
+    --code-bg: #eef0f3;
+    --shadow: 0 1px 2px rgba(16,20,28,0.06), 0 8px 24px rgba(16,20,28,0.04);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a0e14;
+      --bg-alt: #0f141c;
+      --text: #e6edf3;
+      --text-dim: #9aa7b8;
+      --accent: #3ee08a;
+      --accent-2: #a78bfa;
+      --border: #1e2531;
+      --card-bg: #101724;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 30px rgba(0,0,0,0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    scroll-behavior: smooth;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity: 0.35;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 75%);
+  }
+
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  header.hero {
+    padding: 96px 0 64px;
+    text-align: center;
+    position: relative;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 28px;
+  }
+
+  .badge .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  h1.logo {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: clamp(2.6rem, 7vw, 4.4rem);
+    font-weight: 700;
+    margin: 0 0 18px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--text) 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .tagline {
+    font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+    color: var(--text-dim);
+    max-width: 640px;
+    margin: 0 auto 36px;
+  }
+
+  .cta-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .btn:hover { text-decoration: none; transform: translateY(-1px); }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #04150a;
+    border-color: var(--accent);
+  }
+
+  .btn.ghost {
+    background: transparent;
+    color: var(--text);
+  }
+  .btn.ghost:hover { border-color: var(--accent); }
+
+  section {
+    padding: 56px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  section h2 {
+    font-size: 1.6rem;
+    margin: 0 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  section h2::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--accent-2);
+    display: inline-block;
+  }
+
+  .about p {
+    color: var(--text-dim);
+    max-width: 760px;
+    font-size: 1.05rem;
+  }
+
+  .highlights ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  .highlights li {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    font-size: 0.96rem;
+    color: var(--text);
+  }
+
+  .highlights li strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--accent);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .stack-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .tag {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.85rem;
+    padding: 7px 13px;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .note {
+    margin-top: 44px;
+    padding: 18px 20px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent-2) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-2) 30%, transparent);
+    color: var(--text-dim);
+    font-size: 0.92rem;
+  }
+
+  .note strong { color: var(--text); }
+
+  footer {
+    padding: 40px 0 64px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+
+  footer a { color: var(--text); font-weight: 600; }
+
+  code.inline {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="badge"><span class="dot"></span>project showcase</span>
+    <h1 class="logo">PentAI</h1>
+    <p class="tagline">
+      Autonomous, authorization-first web penetration testing — enter a domain,
+      and PentAI runs the full recon-to-remediation pipeline for you.
+    </p>
+    <div class="cta-row">
+      <a class="btn primary" href="https://github.com/kryptbakar/PentAI">View on GitHub</a>
+      <a class="btn ghost" href="#about">Learn more</a>
+    </div>
+  </div>
+</header>
+
+<section id="about" class="about">
+  <div class="wrap">
+    <h2>About</h2>
+    <p>
+      PentAI turns a manual penetration-testing pipeline — subdomain enumeration, service
+      probing, fingerprinting, CVE scanning, and triage — into a single action: type a
+      domain. Every scan passes through a hard authorization chokepoint that checks an
+      allow-list, signed rules-of-engagement, and an active engagement window before any
+      tooling runs, with every allowed and denied attempt written to an append-only audit
+      log. Real, industry-standard tools (nmap, subfinder, httpx, nuclei) execute in
+      throwaway containers, and when configured, Claude turns raw findings into
+      business-risk-ranked, deduplicated, remediation-backed reports surfaced in a
+      glassmorphic security operations console.
+    </p>
+  </div>
+</section>
+
+<section class="highlights">
+  <div class="wrap">
+    <h2>Highlights</h2>
+    <ul>
+      <li><strong>One-click assessments</strong>Command Center provisions scope and dispatches the full recon → vulnerability toolchain from a single domain input.</li>
+      <li><strong>Authorization-first</strong>Every scan passes a single chokepoint enforcing allow-list, RoE, and time-window checks before execution.</li>
+      <li><strong>Real tooling</strong>nmap, subfinder, httpx, and nuclei run in isolated, throwaway containers — no mock output.</li>
+      <li><strong>AI-assisted triage</strong>Claude re-ranks findings by business risk, deduplicates across tools, and drafts remediation guidance.</li>
+      <li><strong>SSRF / internal-target guard</strong>Hard refusal of loopback, RFC1918, link-local, and cloud-metadata targets, unit-tested in CI.</li>
+      <li><strong>Premium console</strong>Live scan status, severity analytics, CVE-referenced findings, and exportable engagement reports.</li>
+      <li><strong>Standalone CLI</strong>The <code class="inline">pentai</code> terminal tool runs DNS, header, and TLS checks with no database or server required.</li>
+      <li><strong>Continuous monitoring</strong>Scheduled re-scans, findings diffing over time, and outbound alerting on new critical findings.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="stack">
+  <div class="wrap">
+    <h2>Tech stack</h2>
+    <div class="stack-tags">
+      <span class="tag">TypeScript</span>
+      <span class="tag">React 19</span>
+      <span class="tag">Vite 7</span>
+      <span class="tag">Tailwind CSS v4</span>
+      <span class="tag">TanStack Query</span>
+      <span class="tag">Recharts</span>
+      <span class="tag">Express 5</span>
+      <span class="tag">Zod</span>
+      <span class="tag">PostgreSQL</span>
+      <span class="tag">Drizzle ORM</span>
+      <span class="tag">Redis</span>
+      <span class="tag">OpenAPI + Orval</span>
+      <span class="tag">Docker</span>
+      <span class="tag">pnpm workspaces</span>
+      <span class="tag">Anthropic SDK (Claude)</span>
+    </div>
+
+    <div class="note">
+      <strong>Note:</strong> this page is a static project showcase for GitHub Pages —
+      not a live-hosted running instance of PentAI. PentAI itself is a full-stack
+      application (API server, PostgreSQL, Redis, containerized scan adapters) that
+      requires a real deployment to run; see the README for local setup instructions.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>PentAI — built for authorized security testing.</p>
+  <p><a href="https://github.com/kryptbakar/PentAI">github.com/kryptbakar/PentAI</a></p>
+</footer>
+
+</body>
+</html>
